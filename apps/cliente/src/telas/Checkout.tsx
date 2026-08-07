@@ -21,7 +21,7 @@ type Props = {
   loja: Estabelecimento;
   linhas: Linha[];
   aoVoltar: () => void;
-  aoTirar: (chave: string) => void;
+  aoMudarQuantidade: (chave: string, quantidade: number) => void;
   aoConfirmar: (pedido: Pedido) => void;
   aoAvisar: (texto: string, erro?: boolean) => void;
 };
@@ -33,7 +33,14 @@ const PAGAMENTOS: [FormaPagamento, string][] = [
   ['DINHEIRO', 'Dinheiro'],
 ];
 
-export function Checkout({ loja, linhas, aoVoltar, aoTirar, aoConfirmar, aoAvisar }: Props) {
+export function Checkout({
+  loja,
+  linhas,
+  aoVoltar,
+  aoMudarQuantidade,
+  aoConfirmar,
+  aoAvisar,
+}: Props) {
   const [tipo, setTipo] = useState<TipoEntrega>(loja.aceitaRetirada ? 'ENTREGA' : 'ENTREGA');
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -182,16 +189,29 @@ export function Checkout({ loja, linhas, aoVoltar, aoTirar, aoConfirmar, aoAvisa
       <div className="pagina">
         {linhas.map((l) => (
           <div className="item-conta" key={l.chave}>
-            <span className="item-q">{l.quantidade}×</span>
-            <div>
+            <div style={{ flex: 1 }}>
               <div className="item-nome">{l.nome}</div>
               {l.adicionais.length > 0 && (
                 <p className="item-extra">+ {l.adicionais.map((a) => a.nome).join(', ')}</p>
               )}
               {l.observacao && <p className="item-extra">“{l.observacao}”</p>}
-              <button type="button" className="item-tirar" onClick={() => aoTirar(l.chave)}>
-                Tirar
-              </button>
+              <div className="qtd-compacto" style={{ marginTop: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => aoMudarQuantidade(l.chave, l.quantidade - 1)}
+                  aria-label={l.quantidade === 1 ? `Tirar ${l.nome}` : `Menos ${l.nome}`}
+                >
+                  {l.quantidade === 1 ? '×' : '−'}
+                </button>
+                <span>{l.quantidade}</span>
+                <button
+                  type="button"
+                  onClick={() => aoMudarQuantidade(l.chave, l.quantidade + 1)}
+                  aria-label={`Mais ${l.nome}`}
+                >
+                  +
+                </button>
+              </div>
             </div>
             <span className="item-v">{formatarBRL(l.previaUnitaria * l.quantidade)}</span>
           </div>

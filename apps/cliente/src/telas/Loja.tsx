@@ -14,17 +14,28 @@ import { type Linha, previaSubtotal, totalDeItens } from '../lib/carrinho.js';
 type Props = {
   loja: Estabelecimento;
   linhas: Linha[];
+  /** Produto vindo da busca: abre a folha direto ao entrar na loja. */
+  produtoInicial: Produto | null;
+  aoLimparProdutoInicial: () => void;
   aoVoltar: () => void;
   aoAdicionar: (linha: Linha) => void;
   aoVerConta: () => void;
 };
 
-export function Loja({ loja, linhas, aoVoltar, aoAdicionar, aoVerConta }: Props) {
+export function Loja({
+  loja,
+  linhas,
+  produtoInicial,
+  aoLimparProdutoInicial,
+  aoVoltar,
+  aoAdicionar,
+  aoVerConta,
+}: Props) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [adicionais, setAdicionais] = useState<Adicional[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [aberto, setAberto] = useState<Produto | null>(null);
+  const [aberto, setAberto] = useState<Produto | null>(produtoInicial);
 
   useEffect(() => {
     const p = getProvider().menu;
@@ -54,7 +65,14 @@ export function Loja({ loja, linhas, aoVoltar, aoAdicionar, aoVerConta }: Props)
         >
           ←
         </button>
-        <h1 className="barra-titulo">{loja.nome}</h1>
+        <div>
+          <h1 className="barra-titulo">{loja.nome}</h1>
+          <p className="barra-sub">
+            {lojaAberta
+              ? `Aberto até as ${loja.horarios[0]?.fecha ?? '—'}`
+              : `Fechado · abre ${loja.horarios[0]?.abre ?? '—'}`}
+          </p>
+        </div>
       </div>
 
       <div className="pagina">
@@ -125,10 +143,14 @@ export function Loja({ loja, linhas, aoVoltar, aoAdicionar, aoVerConta }: Props)
         <FolhaProduto
           produto={aberto}
           adicionais={adicionais}
-          aoFechar={() => setAberto(null)}
+          aoFechar={() => {
+            setAberto(null);
+            aoLimparProdutoInicial();
+          }}
           aoAdicionar={(linha) => {
             aoAdicionar(linha);
             setAberto(null);
+            aoLimparProdutoInicial();
           }}
         />
       )}
