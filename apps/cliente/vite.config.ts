@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'PedeJá',
         short_name: 'PedeJá',
         description: 'Peça do seu restaurante favorito',
-        theme_color: '#C2410C',
+        theme_color: '#17513C',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',

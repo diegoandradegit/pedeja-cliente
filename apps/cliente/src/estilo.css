@@ -1,69 +1,586 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   PedeJá — app do cliente
+   Metáfora: cardápio impresso. Sem foto de produto, quem carrega o apetite é
+   a tipografia. O pontilhado entre nome e preço é a assinatura da tela.
+   ─────────────────────────────────────────────────────────────────────────── */
+
 :root {
-  --fundo: #fafaf9;
-  --texto: #1c1917;
-  --suave: #78716c;
-  --borda: #e7e5e4;
-  --card: #ffffff;
+  --branco: #ffffff;
+  --tinta: #10231c;
+  --verde: #17513c;
+  --verde-claro: #e8f2ec;
+  --lima: #b6e44a;
+  --cinza: #6b7a73;
+  --linha: #dfe6e1;
+
+  --fonte-prato: "Fraunces", Georgia, serif;
+  --fonte-corpo: "Barlow", system-ui, sans-serif;
+  --fonte-dado: "IBM Plex Mono", ui-monospace, monospace;
+
   color-scheme: light;
 }
+
 * {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--fundo);
-  color: var(--texto);
+  background: var(--branco);
+  color: var(--tinta);
+  font-family: var(--fonte-corpo);
   -webkit-font-smoothing: antialiased;
 }
-main {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
+
+button {
+  font: inherit;
+  cursor: pointer;
 }
-h1 {
-  font-size: 1.5rem;
-  margin: 0 0 4px;
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--verde);
+  outline-offset: 2px;
+}
+
+.pagina {
+  padding: 0 18px 120px;
+}
+
+/* ── Cabeçalhos ────────────────────────────────────────────────────────── */
+.capa {
+  background: var(--verde);
+  color: var(--branco);
+  padding: 26px 18px 24px;
+}
+.capa-marca {
+  font-family: var(--fonte-prato);
+  font-size: 2rem;
+  font-weight: 600;
+  font-variation-settings: "SOFT" 30, "WONK" 1;
   letter-spacing: -0.02em;
+  margin: 0;
 }
-.sub {
-  color: var(--suave);
-  font-size: 0.9rem;
-  margin: 0 0 24px;
+.capa-sub {
+  margin: 4px 0 0;
+  opacity: 0.78;
+  font-size: 0.95rem;
 }
-.card {
-  background: var(--card);
-  border: 1px solid var(--borda);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
-}
-.linha {
+
+.barra-topo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 12px;
+  background: var(--branco);
+  border-bottom: 1px solid var(--linha);
+  padding: 12px 18px;
 }
-.tag {
-  font-size: 0.72rem;
+.voltar {
+  background: none;
+  border: none;
+  padding: 4px 8px 4px 0;
+  color: var(--verde);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.barra-titulo {
+  font-family: var(--fonte-prato);
+  font-size: 1.15rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+/* ── Lista de lojas ────────────────────────────────────────────────────── */
+.loja {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--linha);
+  padding: 18px 0;
+  color: inherit;
+}
+.loja-nome {
+  font-family: var(--fonte-prato);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+.loja-desc {
+  color: var(--cinza);
+  font-size: 0.92rem;
+  margin: 3px 0 8px;
+}
+
+.estado {
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   padding: 3px 8px;
   border-radius: 999px;
-  background: var(--borda);
-  color: var(--suave);
+  background: var(--verde-claro);
+  color: var(--verde);
 }
-.vazio {
-  color: var(--suave);
+.estado[data-fechado="true"] {
+  background: #f2f2f2;
+  color: var(--cinza);
+}
+
+/* ── Cardápio: a assinatura ────────────────────────────────────────────── */
+.categoria {
+  font-family: var(--fonte-prato);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--verde);
+  margin: 30px 0 4px;
+}
+
+.prato {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 15px 0 14px;
+  border-bottom: 1px solid var(--linha);
+  color: inherit;
+}
+.prato:disabled {
+  opacity: 0.45;
+}
+
+.prato-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+.prato-nome {
+  font-family: var(--fonte-prato);
+  font-size: 1.12rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+/* o pontilhado do cardápio impresso */
+.prato-guia {
+  flex: 1;
+  margin: 0 7px 0 9px;
+  border-bottom: 1.5px dotted var(--linha);
+  transform: translateY(-4px);
+  min-width: 18px;
+}
+.prato-preco {
+  font-family: var(--fonte-dado);
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.prato-desc {
+  color: var(--cinza);
   font-size: 0.9rem;
-  padding: 32px 0;
+  margin: 4px 0 0;
+  line-height: 1.45;
+}
+
+/* ── Folha inferior ────────────────────────────────────────────────────── */
+.folha-fundo,
+.folha-fundo[open] {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: flex-end;
+}
+.folha-fundo::backdrop {
+  background: rgba(16, 35, 28, 0.55);
+}
+
+.folha {
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--branco);
+  border-radius: 16px 16px 0 0;
+  padding: 8px 18px calc(18px + env(safe-area-inset-bottom));
+  animation: sobe 180ms ease-out;
+}
+@keyframes sobe {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .folha {
+    animation: none;
+  }
+}
+
+.puxador {
+  width: 36px;
+  height: 4px;
+  background: var(--linha);
+  border-radius: 2px;
+  margin: 6px auto 16px;
+}
+.folha h2 {
+  font-family: var(--fonte-prato);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+.folha-desc {
+  color: var(--cinza);
+  font-size: 0.95rem;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.bloco-t {
+  font-family: var(--fonte-prato);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--verde);
+  margin: 22px 0 8px;
+}
+
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--linha);
+  cursor: pointer;
+}
+.opcao input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--verde);
+  flex: 0 0 auto;
+}
+.opcao-nome {
+  font-size: 1rem;
+}
+.opcao-preco {
+  margin-left: auto;
+  font-family: var(--fonte-dado);
+  font-size: 0.92rem;
+  color: var(--cinza);
+}
+
+/* ── Quantidade ────────────────────────────────────────────────────────── */
+.qtd {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 22px 0 0;
+}
+.qtd button {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1.5px solid var(--linha);
+  background: none;
+  color: var(--tinta);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.qtd button:disabled {
+  opacity: 0.3;
+}
+.qtd-n {
+  font-family: var(--fonte-dado);
+  font-size: 1.3rem;
+  font-weight: 600;
+  min-width: 28px;
   text-align: center;
 }
-.fase {
-  margin-top: 32px;
-  padding-top: 16px;
-  border-top: 1px dashed var(--borda);
-  color: var(--suave);
+
+/* ── Botões ────────────────────────────────────────────────────────────── */
+.principal {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--verde);
+  color: var(--branco);
+  font-size: 1.02rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.principal:disabled {
+  opacity: 0.45;
+}
+.principal-valor {
+  font-family: var(--fonte-dado);
+  margin-left: auto;
+}
+.principal-rotulo {
+  margin-right: auto;
+}
+
+.secundario {
+  width: 100%;
+  padding: 14px;
+  border: 1.5px solid var(--linha);
+  border-radius: 10px;
+  background: none;
+  color: var(--tinta);
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.escolhas {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.escolha {
+  flex: 1;
+  padding: 13px 8px;
+  border-radius: 10px;
+  border: 1.5px solid var(--linha);
+  background: none;
+  color: var(--cinza);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.escolha[aria-pressed="true"] {
+  border-color: var(--verde);
+  background: var(--verde-claro);
+  color: var(--verde);
+}
+
+/* ── Barra da conta ────────────────────────────────────────────────────── */
+.conta-barra {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  background: var(--branco);
+  border-top: 1px solid var(--linha);
+}
+
+/* ── Conta / checkout ──────────────────────────────────────────────────── */
+.item-conta {
+  display: flex;
+  gap: 10px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linha);
+}
+.item-q {
+  font-family: var(--fonte-dado);
+  font-weight: 600;
+  min-width: 26px;
+}
+.item-nome {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+.item-extra {
+  color: var(--cinza);
+  font-size: 0.86rem;
+  margin: 3px 0 0;
+}
+.item-v {
+  margin-left: auto;
+  font-family: var(--fonte-dado);
+  font-size: 0.94rem;
+  white-space: nowrap;
+}
+.item-tirar {
+  background: none;
+  border: none;
+  color: var(--cinza);
+  font-size: 0.84rem;
+  padding: 4px 0 0;
+  text-decoration: underline;
+}
+
+.soma {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.96rem;
+}
+.soma span:last-child {
+  font-family: var(--fonte-dado);
+}
+.soma-total {
+  font-weight: 700;
+  font-size: 1.15rem;
+  border-top: 1px solid var(--linha);
+  margin-top: 8px;
+  padding-top: 12px;
+}
+
+.campo {
+  margin-bottom: 14px;
+}
+.campo label {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--cinza);
+  margin-bottom: 5px;
+}
+.campo input,
+.campo textarea,
+.campo select {
+  width: 100%;
+  padding: 13px;
+  border: 1.5px solid var(--linha);
+  border-radius: 10px;
+  background: var(--branco);
+  color: var(--tinta);
+  font-family: var(--fonte-corpo);
+  font-size: 1rem;
+}
+.campo-duplo {
+  display: flex;
+  gap: 10px;
+}
+.dica {
+  font-size: 0.85rem;
+  color: var(--cinza);
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+.erro-campo {
+  color: #b3261e;
+  font-size: 0.86rem;
+  margin: 6px 0 0;
+}
+
+/* ── Acompanhamento ────────────────────────────────────────────────────── */
+.trilha {
+  list-style: none;
+  padding: 0;
+  margin: 26px 0 0;
+}
+.etapa {
+  display: flex;
+  gap: 14px;
+  padding-bottom: 26px;
+  position: relative;
+}
+.etapa::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 22px;
+  bottom: 0;
+  width: 2px;
+  background: var(--linha);
+}
+.etapa:last-child::before {
+  display: none;
+}
+.etapa-bolha {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  border: 2px solid var(--linha);
+  background: var(--branco);
+  z-index: 1;
+}
+.etapa[data-feita="true"] .etapa-bolha {
+  background: var(--verde);
+  border-color: var(--verde);
+}
+.etapa[data-atual="true"] .etapa-bolha {
+  background: var(--lima);
+  border-color: var(--verde);
+}
+.etapa-nome {
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+.etapa[data-feita="false"] .etapa-nome {
+  color: var(--cinza);
+  font-weight: 400;
+}
+.etapa-quando {
+  font-family: var(--fonte-dado);
   font-size: 0.8rem;
-  line-height: 1.6;
+  color: var(--cinza);
+  margin: 3px 0 0;
+}
+
+.selo-grande {
+  background: var(--verde-claro);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  margin: 22px 0 0;
+}
+.selo-grande strong {
+  display: block;
+  font-family: var(--fonte-prato);
+  font-size: 1.4rem;
+  color: var(--verde);
+}
+.selo-grande span {
+  font-size: 0.92rem;
+  color: var(--cinza);
+}
+
+/* ── Vazio ─────────────────────────────────────────────────────────────── */
+.vazio {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--cinza);
+}
+.vazio-t {
+  font-family: var(--fonte-prato);
+  font-size: 1.2rem;
+  color: var(--tinta);
+  margin: 0 0 6px;
+}
+.vazio p {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+.aviso {
+  position: fixed;
+  left: 18px;
+  right: 18px;
+  bottom: 92px;
+  z-index: 50;
+  background: var(--tinta);
+  color: var(--branco);
+  padding: 13px 15px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  box-shadow: 0 6px 24px rgba(16, 35, 28, 0.25);
+}
+.aviso[data-tom="erro"] {
+  background: #b3261e;
 }
