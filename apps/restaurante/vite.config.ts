@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'PedeJá Painel',
         short_name: 'PedeJá Painel',
         description: 'Gestão de pedidos e cardápio',
-        theme_color: '#1C1917',
+        theme_color: '#16181D',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',

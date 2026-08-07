@@ -89,7 +89,7 @@ esse prefixo e só são lidos dentro de Netlify Functions.
 - [x] **0** — Monorepo, tooling, CI, 3 PWAs buildando
 - [x] **1** — `packages/domain`: dinheiro, precificação, frete, geo, horários, máquina de estados
 - [x] **2** — `packages/data`: contratos + provider mock com realtime simulado
-- [ ] **3** — Painel do restaurante (kanban, cardápio, configurações)
+- [x] **3** — Painel do restaurante (comandas, cardápio, regras de entrega)
 - [ ] **4** — App do cliente (cardápio, carrinho, checkout, tracking)
 - [ ] **5** — App do entregador (corridas, aceite, extrato) + Web Push
 - [ ] **6** — Supabase: schema, RLS, RPCs, Auth, Realtime, Storage
