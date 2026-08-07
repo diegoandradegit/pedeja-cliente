@@ -1,8 +1,13 @@
+# Este site usa o modo monorepo do Netlify (packagePath = apps/cliente).
+# Nesse modo o build roda a partir da RAIZ do repositorio, entao todos os
+# caminhos abaixo sao relativos a raiz — nao a esta pasta.
 [build]
-  command = "pnpm build"
-  publish = "dist"
-  # Só rebuilda se algo dentro desta pasta (ou nos packages compartilhados) mudou.
-  ignore = "git diff --quiet HEAD^ HEAD -- . ../../packages ../../pnpm-lock.yaml"
+  command = "pnpm --filter @pedeja/cliente... build"
+  publish = "apps/cliente/dist"
+  # Usa os refs que a propria Netlify injeta. Na primeira build
+  # CACHED_COMMIT_REF nao existe, o comando falha e a build acontece — que e
+  # o comportamento desejado.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- apps/cliente packages pnpm-lock.yaml"
 
 [build.environment]
   NODE_VERSION = "20"
