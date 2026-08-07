@@ -3,7 +3,7 @@ import { adicionais, categorias, configsFrete, estabelecimentos, produtos } from
 
 // Versao da chave: subir sempre que o seed mudar, senao o aparelho continua
 // servindo o catalogo antigo guardado no localStorage.
-const CHAVE = 'pedeja:mock:v2';
+const CHAVE = 'pedeja:mock:v3';
 
 export type Estado = {
   estabelecimentos: typeof estabelecimentos;
