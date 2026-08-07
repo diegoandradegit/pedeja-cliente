@@ -1,10 +1,11 @@
 import { getProvider } from '@pedeja/data';
 import { type Categoria, type Estabelecimento, type Produto, formatarBRL } from '@pedeja/domain';
+import { Search } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 type Props = { loja: Estabelecimento; aoEscolher: (produto: Produto) => void };
 
-/** Ignora acento e caixa: "acai" acha "Açaí". */
+/** melhoria: ignora acento e caixa — "acai" acha "Açaí". */
 const normalizar = (s: string): string =>
   s
     .normalize('NFD')
@@ -34,26 +35,27 @@ export function Busca({ loja, aoEscolher }: Props) {
     );
   }, [termo, produtos]);
 
-  const nomeCategoria = (id: string) => categorias.find((c) => c.id === id)?.nome ?? '';
+  const categoriaDe = (id: string) => categorias.find((c) => c.id === id)?.nome ?? '';
 
   return (
     <>
-      <div className="barra-topo">
-        <h1 className="barra-titulo">Buscar no cardápio</h1>
+      <div className="busca-caixa">
+        <Search size={26} strokeWidth={2.5} />
+        <input
+          type="search"
+          value={termo}
+          onChange={(e) => setTermo(e.target.value)}
+          placeholder="Buscar por nome..."
+          aria-label="Buscar no cardápio"
+        />
       </div>
 
       <div className="pagina">
-        <div className="campo" style={{ marginTop: 16 }}>
-          <input
-            type="search"
-            value={termo}
-            onChange={(e) => setTermo(e.target.value)}
-            placeholder="Pizza, hambúrguer, bebida…"
-            aria-label="Buscar no cardápio"
-          />
-        </div>
-
-        {carregando && <p className="dica">Carregando cardápio…</p>}
+        {carregando && (
+          <p className="dica" style={{ marginTop: 18 }}>
+            Carregando cardápio…
+          </p>
+        )}
 
         {!carregando && termo.trim().length < 2 && (
           <div className="vazio">
@@ -65,7 +67,7 @@ export function Busca({ loja, aoEscolher }: Props) {
         {!carregando && termo.trim().length >= 2 && achados.length === 0 && (
           <div className="vazio">
             <p className="vazio-t">Nada com “{termo.trim()}”</p>
-            <p>Tente outro termo ou volte ao cardápio completo.</p>
+            <p>Tente outro termo ou volte ao cardápio.</p>
           </div>
         )}
 
@@ -73,12 +75,19 @@ export function Busca({ loja, aoEscolher }: Props) {
           <button type="button" className="prato" key={p.id} onClick={() => aoEscolher(p)}>
             <span className="prato-texto">
               <span className="prato-nome">{p.nome}</span>
-              <span className="prato-desc">{nomeCategoria(p.categoriaId)}</span>
+              {p.descricao && <span className="prato-desc">{p.descricao}</span>}
               <span className="prato-preco">{formatarBRL(p.preco)}</span>
             </span>
             {p.imagem && <img className="prato-foto" src={p.imagem} alt="" loading="lazy" />}
           </button>
         ))}
+
+        {achados.length > 0 && (
+          <p className="dica">
+            {achados.length} {achados.length === 1 ? 'item' : 'itens'} em{' '}
+            {[...new Set(achados.map((p) => categoriaDe(p.categoriaId)))].join(', ')}.
+          </p>
+        )}
       </div>
     </>
   );

@@ -38,8 +38,8 @@ export function MeusPedidos({ aoAbrir }: Props) {
 
   return (
     <>
-      <div className="barra-topo">
-        <h1 className="barra-titulo">Meus pedidos</h1>
+      <div className="folha-cabecalho">
+        <h2>Meus Pedidos</h2>
       </div>
 
       <div className="pagina">
@@ -60,15 +60,25 @@ export function MeusPedidos({ aoAbrir }: Props) {
         )}
 
         {pedidos?.map((p) => (
-          <button type="button" className="loja" key={p.id} onClick={() => aoAbrir(p)}>
-            <p className="loja-nome">Pedido #{String(p.numero).padStart(3, '0')}</p>
-            <p className="loja-desc">
-              {new Date(p.criadoEm).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-              {' · '}
-              {p.itens.length} {p.itens.length === 1 ? 'item' : 'itens'} · {formatarBRL(p.total)}
-            </p>
-            <span className="estado" data-fechado={!EM_ANDAMENTO.includes(p.status)}>
-              {ROTULO[p.status]}
+          <button type="button" className="prato" key={p.id} onClick={() => aoAbrir(p)}>
+            <span className="prato-texto">
+              <span className="prato-nome">Pedido #{String(p.numero).padStart(3, '0')}</span>
+              <span className="prato-desc">
+                {new Date(p.criadoEm).toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: 'short',
+                })}
+                {' · '}
+                {p.itens.length} {p.itens.length === 1 ? 'item' : 'itens'} · {formatarBRL(p.total)}
+              </span>
+              <span
+                className="prato-preco"
+                style={{
+                  color: EM_ANDAMENTO.includes(p.status) ? 'var(--vermelho)' : 'var(--cinza)',
+                }}
+              >
+                {ROTULO[p.status]}
+              </span>
             </span>
           </button>
         ))}

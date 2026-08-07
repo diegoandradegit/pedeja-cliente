@@ -37,17 +37,19 @@ export function Acompanhar({ pedidoInicial, aoNovoPedido }: Props) {
 
   return (
     <>
-      <header className="capa">
-        <h1 className="capa-marca">Pedido #{String(pedido.numero).padStart(3, '0')}</h1>
-        <p className="capa-sub">
-          {pedido.itens.length} {pedido.itens.length === 1 ? 'item' : 'itens'} ·{' '}
-          {formatarBRL(pedido.total)}
-        </p>
+      <header className="folha-cabecalho">
+        <div>
+          <h2>Pedido #{String(pedido.numero).padStart(3, '0')}</h2>
+          <p className="dica" style={{ margin: '4px 0 0' }}>
+            {pedido.itens.length} {pedido.itens.length === 1 ? 'item' : 'itens'} ·{' '}
+            {formatarBRL(pedido.total)}
+          </p>
+        </div>
       </header>
 
       <div className="pagina">
         {cancelado ? (
-          <div className="selo-grande">
+          <div className="faixa">
             <strong>Pedido cancelado</strong>
             <span>
               Se você não pediu o cancelamento, fale com o restaurante pelo telefone da loja.
@@ -81,43 +83,43 @@ export function Acompanhar({ pedidoInicial, aoNovoPedido }: Props) {
         )}
 
         {pedido.status === 'PRONTO' && pedido.tipoEntrega === 'RETIRADA' && (
-          <div className="selo-grande">
+          <div className="faixa">
             <strong>Pode buscar</strong>
             <span>Seu pedido está pronto no balcão.</span>
           </div>
         )}
 
-        <p className="bloco-t">O que você pediu</p>
+        <p className="bloco-titulo">O que você pediu</p>
         {pedido.itens.map((item, i) => (
           <div className="item-conta" key={`${item.produtoId}-${i}`}>
-            <span className="item-q">{item.quantidade}×</span>
+            <span className="item-nome">{item.quantidade}×</span>
             <div>
               <div className="item-nome">{item.nomeProduto}</div>
               {item.adicionais.length > 0 && (
                 <p className="item-extra">+ {item.adicionais.map((a) => a.nome).join(', ')}</p>
               )}
             </div>
-            <span className="item-v">{formatarBRL(item.subtotal)}</span>
+            <span className="item-preco">{formatarBRL(item.subtotal)}</span>
           </div>
         ))}
 
-        <div className="soma" style={{ marginTop: 10 }}>
+        <div className="resumo-linha" style={{ marginTop: 10 }}>
           <span>Itens</span>
           <span>{formatarBRL(pedido.subtotal)}</span>
         </div>
         {pedido.tipoEntrega === 'ENTREGA' && (
-          <div className="soma">
+          <div className="resumo-linha">
             <span>Entrega</span>
             <span>{pedido.frete === 0 ? 'Grátis' : formatarBRL(pedido.frete)}</span>
           </div>
         )}
-        <div className="soma soma-total">
+        <div className="resumo-linha resumo-total">
           <span>Total</span>
           <span>{formatarBRL(pedido.total)}</span>
         </div>
 
         <div style={{ height: 24 }} />
-        <button type="button" className="secundario" onClick={aoNovoPedido}>
+        <button type="button" className="secundaria" onClick={aoNovoPedido}>
           Fazer outro pedido
         </button>
       </div>

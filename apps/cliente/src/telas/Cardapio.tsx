@@ -9,32 +9,25 @@ import {
 } from '@pedeja/domain';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FolhaProduto } from '../componentes/FolhaProduto.js';
-import { type Linha, previaSubtotal, totalDeItens } from '../lib/carrinho.js';
+import type { Linha } from '../lib/carrinho.js';
 
 type Props = {
   loja: Estabelecimento;
-  linhas: Linha[];
   produtoInicial: Produto | null;
   aoLimparProdutoInicial: () => void;
   aoAdicionar: (linha: Linha) => void;
-  aoVerConta: () => void;
 };
 
-export function Cardapio({
-  loja,
-  linhas,
-  produtoInicial,
-  aoLimparProdutoInicial,
-  aoAdicionar,
-  aoVerConta,
-}: Props) {
+export function Cardapio({ loja, produtoInicial, aoLimparProdutoInicial, aoAdicionar }: Props) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [adicionais, setAdicionais] = useState<Adicional[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [aberto, setAberto] = useState<Produto | null>(produtoInicial);
-  const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
+  const [ativa, setAtiva] = useState<string | null>(null);
   const secoes = useRef(new Map<string, HTMLElement>());
+
+  useEffect(() => setAberto(produtoInicial), [produtoInicial]);
 
   useEffect(() => {
     const p = getProvider().menu;
@@ -46,37 +39,33 @@ export function Cardapio({
       setCategorias(c);
       setProdutos(pr);
       setAdicionais(ad);
-      setCategoriaAtiva(c[0]?.id ?? null);
+      setAtiva(c[0]?.id ?? null);
       setCarregando(false);
     });
   }, [loja.id]);
 
-  /**
-   * A aba de categoria acompanha a rolagem. Marca a seção que está mais
-   * próxima do topo da área visível, logo abaixo da barra de abas.
-   */
+  /** A aba ativa acompanha a rolagem. */
   useEffect(() => {
     if (categorias.length === 0) return;
-    const observador = new IntersectionObserver(
+    const obs = new IntersectionObserver(
       (entradas) => {
         const visivel = entradas
           .filter((e) => e.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (visivel?.target.id) setCategoriaAtiva(visivel.target.id.replace('cat-', ''));
+        if (visivel?.target.id) setAtiva(visivel.target.id.replace('cat-', ''));
       },
-      { rootMargin: '-64px 0px -70% 0px', threshold: 0 },
+      { rootMargin: '-70px 0px -70% 0px', threshold: 0 },
     );
-    for (const el of secoes.current.values()) observador.observe(el);
-    return () => observador.disconnect();
+    for (const el of secoes.current.values()) obs.observe(el);
+    return () => obs.disconnect();
   }, [categorias]);
 
-  const irPara = useCallback((categoriaId: string) => {
-    secoes.current.get(categoriaId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setCategoriaAtiva(categoriaId);
+  const irPara = useCallback((id: string) => {
+    secoes.current.get(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setAtiva(id);
   }, []);
 
   const lojaAberta = estabelecimentoAberto(loja.horarios, new Date());
-  const itens = totalDeItens(linhas);
   const comProdutos = categorias.filter((c) =>
     produtos.some((p) => p.categoriaId === c.id && p.ativo),
   );
@@ -84,15 +73,15 @@ export function Cardapio({
   return (
     <>
       <header className="loja-capa">
-        <h1>{loja.nome}</h1>
-        <p>
-          {loja.descricao} · {loja.endereco}
-        </p>
-        <span className="estado" data-fechado={!lojaAberta}>
-          {lojaAberta
-            ? `Aberto até as ${loja.horarios[0]?.fecha ?? '—'}`
-            : `Fechado · abre ${loja.horarios[0]?.abre ?? '—'}`}
-        </span>
+        <div>
+          <h1>{loja.nome}</h1>
+          <p data-fechado={!lojaAberta}>
+            {lojaAberta
+              ? `Aberto até as ${loja.horarios[0]?.fecha ?? '—'}`
+              : `Fechado · abre ${loja.horarios[0]?.abre ?? '—'}`}
+          </p>
+        </div>
+        {loja.imagem && <img className="loja-marca" src={loja.imagem} alt="" />}
       </header>
 
       {comProdutos.length > 1 && (
@@ -102,7 +91,7 @@ export function Cardapio({
               type="button"
               key={c.id}
               className="categoria-aba"
-              aria-current={categoriaAtiva === c.id}
+              aria-current={ativa === c.id}
               onClick={() => irPara(c.id)}
             >
               {c.nome}
@@ -118,7 +107,7 @@ export function Cardapio({
           </div>
         )}
 
-        {!carregando && produtos.filter((p) => p.ativo).length === 0 && (
+        {!carregando && comProdutos.length === 0 && (
           <div className="vazio">
             <p className="vazio-t">Cardápio vazio</p>
             <p>Nenhum produto publicado ainda.</p>
@@ -134,7 +123,7 @@ export function Cardapio({
               else secoes.current.delete(cat.id);
             }}
           >
-            <h2 className="categoria-titulo">{cat.nome}</h2>
+            <h2 className="secao-titulo">{cat.nome}</h2>
             {produtos
               .filter((p) => p.categoriaId === cat.id && p.ativo)
               .map((p) => (
@@ -179,17 +168,6 @@ export function Cardapio({
             aoLimparProdutoInicial();
           }}
         />
-      )}
-
-      {itens > 0 && (
-        <div className="conta-barra">
-          <button type="button" className="principal" onClick={aoVerConta}>
-            <span className="principal-rotulo">
-              Meu pedido · {itens} {itens === 1 ? 'item' : 'itens'}
-            </span>
-            <span className="principal-valor">{formatarBRL(previaSubtotal(linhas))}</span>
-          </button>
-        </div>
       )}
     </>
   );
