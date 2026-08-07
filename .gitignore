@@ -10,4 +10,3 @@ coverage/
 .netlify/
 *.tsbuildinfo
 dev-dist/
-.github/workflows/
