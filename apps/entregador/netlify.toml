@@ -1,13 +1,18 @@
-# Este site usa o modo monorepo do Netlify (packagePath = apps/entregador).
-# Nesse modo o build roda a partir da RAIZ do repositorio, entao todos os
-# caminhos abaixo sao relativos a raiz — nao a esta pasta.
+# ─────────────────────────────────────────────────────────────────────────────
+# Configuracao unica para os tres sites.
+#
+# Qual app cada site publica e decidido pela variavel de ambiente APP_ALVO
+# (cliente | entregador | restaurante), definida no painel de cada site — NAO
+# pelo campo "package directory". Este mesmo arquivo esta replicado em
+# apps/*/netlify.toml para que o resultado seja o mesmo qualquer que seja a
+# pasta que a Netlify resolva ler.
+#
+# O build roda sempre a partir da raiz do repo, monta o app escolhido e copia
+# o resultado para ./dist, que e o unico caminho publicado.
+# ─────────────────────────────────────────────────────────────────────────────
 [build]
-  command = "pnpm --filter @pedeja/entregador... build"
-  publish = "apps/entregador/dist"
-  # Usa os refs que a propria Netlify injeta. Na primeira build
-  # CACHED_COMMIT_REF nao existe, o comando falha e a build acontece — que e
-  # o comportamento desejado.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- apps/entregador packages pnpm-lock.yaml"
+  command = ": \"${APP_ALVO:?defina APP_ALVO no painel do site: cliente | entregador | restaurante}\" && pnpm --filter @pedeja/$APP_ALVO... build && rm -rf dist && cp -r apps/$APP_ALVO/dist dist"
+  publish = "dist"
 
 [build.environment]
   NODE_VERSION = "20"

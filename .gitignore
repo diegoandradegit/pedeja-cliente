@@ -10,3 +10,4 @@ coverage/
 .netlify/
 *.tsbuildinfo
 dev-dist/
+/dist
