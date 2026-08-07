@@ -7,6 +7,9 @@ import type {
   Produto,
 } from '@pedeja/domain';
 
+/** Placeholder unico ate o upload de imagem entrar (Fase 6, Supabase Storage). */
+const IMAGEM_EXEMPLO = '/produtos/exemplo.webp';
+
 const todaSemana = (abre: string, fecha: string): FaixaHorario[] =>
   [0, 1, 2, 3, 4, 5, 6].map((d) => ({ diaSemana: d, abre, fecha }));
 
@@ -59,7 +62,7 @@ export const produtos: Produto[] = [
     nome: 'X-Salada',
     descricao: 'Blend 160g, queijo, alface e tomate',
     preco: 2500,
-    imagem: null,
+    imagem: IMAGEM_EXEMPLO,
     categoriaId: 'c1',
     adicionaisIds: ['a1', 'a2', 'a3'],
     ativo: true,
@@ -70,7 +73,7 @@ export const produtos: Produto[] = [
     nome: 'X-Bacon Duplo',
     descricao: 'Dois blends 160g e bacon crocante',
     preco: 3800,
-    imagem: null,
+    imagem: IMAGEM_EXEMPLO,
     categoriaId: 'c1',
     adicionaisIds: ['a1', 'a2'],
     ativo: true,
@@ -81,7 +84,7 @@ export const produtos: Produto[] = [
     nome: 'Refrigerante lata',
     descricao: '350ml',
     preco: 700,
-    imagem: null,
+    imagem: IMAGEM_EXEMPLO,
     categoriaId: 'c2',
     adicionaisIds: [],
     ativo: true,
@@ -92,7 +95,7 @@ export const produtos: Produto[] = [
     nome: 'Nhoque ao sugo',
     descricao: 'Porcao individual',
     preco: 3200,
-    imagem: null,
+    imagem: IMAGEM_EXEMPLO,
     categoriaId: 'c3',
     adicionaisIds: ['a4'],
     ativo: true,

@@ -217,6 +217,7 @@ export function Cardapio({ estabelecimentoId, aoAvisar }: Props) {
                     })
                   }
                 >
+                  {p.imagem && <img className="li-foto" src={p.imagem} alt="" loading="lazy" />}
                   <div>
                     <div className="li-nome">
                       {p.nome}

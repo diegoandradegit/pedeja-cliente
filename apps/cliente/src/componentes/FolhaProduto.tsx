@@ -46,6 +46,9 @@ export function FolhaProduto({ produto, adicionais, aoFechar, aoAdicionar }: Pro
     >
       <div className="folha">
         <div className="puxador" />
+        {produto.imagem && (
+          <img className="folha-foto" src={produto.imagem} alt={produto.nome} decoding="async" />
+        )}
         <h2>{produto.nome}</h2>
         {produto.descricao && <p className="folha-desc">{produto.descricao}</p>}
 

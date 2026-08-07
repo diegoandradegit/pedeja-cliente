@@ -95,12 +95,25 @@ export function Loja({ loja, linhas, aoVoltar, aoAdicionar, aoVerConta }: Props)
                   disabled={!lojaAberta}
                   onClick={() => setAberto(p)}
                 >
-                  <span className="prato-linha">
-                    <span className="prato-nome">{p.nome}</span>
-                    <span className="prato-guia" aria-hidden="true" />
-                    <span className="prato-preco">{formatarBRL(p.preco)}</span>
+                  <span className="prato-corpo">
+                    <span className="prato-texto">
+                      <span className="prato-linha">
+                        <span className="prato-nome">{p.nome}</span>
+                        <span className="prato-guia" aria-hidden="true" />
+                        <span className="prato-preco">{formatarBRL(p.preco)}</span>
+                      </span>
+                      {p.descricao && <span className="prato-desc">{p.descricao}</span>}
+                    </span>
+                    {p.imagem && (
+                      <img
+                        className="prato-foto"
+                        src={p.imagem}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    )}
                   </span>
-                  {p.descricao && <span className="prato-desc">{p.descricao}</span>}
                 </button>
               ))}
             </section>
