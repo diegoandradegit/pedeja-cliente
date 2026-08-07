@@ -1,0 +1,120 @@
+import type { Centavos } from './money.js';
+import type { StatusPedido, TipoEntrega } from './order-status.js';
+
+export type Coordenada = { lat: number; lng: number };
+
+export type Adicional = {
+  id: string;
+  nome: string;
+  preco: Centavos;
+  ativo: boolean;
+};
+
+export type Produto = {
+  id: string;
+  estabelecimentoId: string;
+  nome: string;
+  descricao: string;
+  preco: Centavos;
+  imagem: string | null;
+  categoriaId: string;
+  adicionaisIds: string[];
+  ativo: boolean;
+};
+
+export type Categoria = {
+  id: string;
+  estabelecimentoId: string;
+  nome: string;
+  ordem: number;
+};
+
+export type ConfigFrete = {
+  estabelecimentoId: string;
+  taxaFixa: Centavos;
+  precoPorKm: Centavos;
+  raioMaximoKm: number;
+  freteGratisAcimaDe: Centavos | null;
+};
+
+export type FaixaHorario = { diaSemana: number; abre: string; fecha: string };
+
+export type Estabelecimento = {
+  id: string;
+  nome: string;
+  descricao: string;
+  imagem: string | null;
+  corPrimaria: string;
+  corSecundaria: string;
+  coordenada: Coordenada;
+  endereco: string;
+  horarios: FaixaHorario[];
+  aceitaRetirada: boolean;
+  ativo: boolean;
+};
+
+/**
+ * O que o CLIENTE envia no checkout. Repare que nao existe campo de preco:
+ * o cliente so escolhe o que quer, o servidor decide quanto custa.
+ */
+export type ItemCarrinho = {
+  produtoId: string;
+  quantidade: number;
+  adicionaisIds: string[];
+  observacao?: string;
+};
+
+/** Item ja precificado e congelado no pedido. */
+export type ItemPedido = {
+  produtoId: string;
+  nomeProduto: string;
+  quantidade: number;
+  precoUnitario: Centavos;
+  adicionais: { id: string; nome: string; preco: Centavos }[];
+  subtotal: Centavos;
+  observacao?: string;
+};
+
+export type EnderecoEntrega = {
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  coordenada: Coordenada;
+};
+
+export type FormaPagamento = 'PIX' | 'CREDITO' | 'DEBITO' | 'DINHEIRO';
+
+export type Pedido = {
+  id: string;
+  numero: number;
+  estabelecimentoId: string;
+  clienteId: string;
+  clienteNome: string;
+  clienteTelefone: string;
+  itens: ItemPedido[];
+  tipoEntrega: TipoEntrega;
+  endereco: EnderecoEntrega | null;
+  distanciaKm: number | null;
+  subtotal: Centavos;
+  frete: Centavos;
+  desconto: Centavos;
+  total: Centavos;
+  formaPagamento: FormaPagamento;
+  trocoPara: Centavos | null;
+  status: StatusPedido;
+  entregadorId: string | null;
+  criadoEm: string;
+  atualizadoEm: string;
+};
+
+export type EventoStatus = {
+  pedidoId: string;
+  de: StatusPedido | null;
+  para: StatusPedido;
+  ator: string;
+  em: string;
+};

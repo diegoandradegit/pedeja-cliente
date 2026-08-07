@@ -1,0 +1,21 @@
+[build]
+  command = "pnpm build"
+  publish = "dist"
+  # Só rebuilda se algo dentro desta pasta (ou nos packages compartilhados) mudou.
+  ignore = "git diff --quiet HEAD^ HEAD -- . ../../packages ../../pnpm-lock.yaml"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=()"
