@@ -9,6 +9,7 @@ import {
 } from '@pedeja/domain';
 import { Banknote, Check, CreditCard, Plus, QrCode, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { BuscaEndereco } from '../componentes/BuscaEndereco.js';
 import { type Linha, previaSubtotal } from '../lib/carrinho.js';
 import {
   type Coordenada,
@@ -293,6 +294,23 @@ export function Conta({
             {tipo === 'ENTREGA' && (
               <>
                 <p className="bloco-titulo">Endereço</p>
+
+                <BuscaEndereco
+                  aoEscolher={(e) => {
+                    setLogradouro(e.logradouro);
+                    if (e.numero) setNumero(e.numero);
+                    setBairro(e.bairro);
+                    setCidade(e.cidade);
+                    setUf(e.uf);
+                    if (e.cep) setCep(formatarCep(e.cep));
+                    // o autocomplete já traz coordenada: dispensa pedir a
+                    // localização do aparelho só para calcular o frete
+                    setCoord(e.coordenada);
+                    aoAvisar('Endereço preenchido');
+                  }}
+                  aoFalhar={(msg) => aoAvisar(msg, true)}
+                />
+
                 <div className="campo">
                   <label htmlFor="cep">CEP</label>
                   <input
@@ -361,7 +379,10 @@ export function Conta({
                       ? 'Localização confirmada ✓'
                       : 'Usar minha localização'}
                 </button>
-                <p className="dica">O frete usa a distância real até o restaurante.</p>
+                <p className="dica">
+                  O frete usa a distância real até o restaurante. A busca acima já traz a
+                  localização; este botão é a alternativa para quem prefere não digitar.
+                </p>
               </>
             )}
 

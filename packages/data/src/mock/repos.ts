@@ -236,6 +236,7 @@ export const ordersMock: OrdersRepo = {
         nome: loja?.nome ?? '',
         imagem: loja?.imagem ?? null,
         endereco: loja?.endereco ?? '',
+        coordenada: loja?.coordenada ?? { lat: 0, lng: 0 },
       },
       historico: e.historico.filter((h) => h.pedidoId === pedidoId),
     };

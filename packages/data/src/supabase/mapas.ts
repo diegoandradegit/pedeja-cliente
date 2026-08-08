@@ -207,7 +207,13 @@ export const SELECT_PRODUTO = '*, produto_adicionais(adicional_id)';
 /** Resposta da RPC acompanhar_pedido: pedido + loja + itens + histórico. */
 export function paraAcompanhamento(d: Record<string, unknown>): {
   pedido: Pedido;
-  estabelecimento: { id: string; nome: string; imagem: string | null; endereco: string };
+  estabelecimento: {
+    id: string;
+    nome: string;
+    imagem: string | null;
+    endereco: string;
+    coordenada: { lat: number; lng: number };
+  };
   historico: { de: Pedido['status'] | null; para: Pedido['status']; em: string }[];
 } {
   const bruto = d.pedido as Record<string, unknown>;
@@ -219,6 +225,7 @@ export function paraAcompanhamento(d: Record<string, unknown>): {
       nome: string;
       imagem: string | null;
       endereco: string;
+      coordenada: { lat: number; lng: number };
     },
     historico: (d.historico ?? []) as {
       de: Pedido['status'] | null;

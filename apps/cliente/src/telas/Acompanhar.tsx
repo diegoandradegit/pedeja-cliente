@@ -1,7 +1,14 @@
 import { type Acompanhamento, getProvider } from '@pedeja/data';
-import { type StatusPedido, ehStatusFinal, formatarBRL } from '@pedeja/domain';
+import {
+  type Coordenada,
+  type StatusPedido,
+  deveMostrarMapa,
+  ehStatusFinal,
+  formatarBRL,
+} from '@pedeja/domain';
 import { ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { MapaEntrega } from '../componentes/MapaEntrega.js';
 
 type Props = { pedidoId: string; aoVoltar: () => void; aoNovoPedido: () => void };
 
@@ -44,6 +51,7 @@ const hora = (iso: string) =>
 export function Acompanhar({ pedidoId, aoVoltar, aoNovoPedido }: Props) {
   const [dados, setDados] = useState<Acompanhamento | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [posicao, setPosicao] = useState<Coordenada | null>(null);
 
   const carregar = useCallback(async () => {
     try {
@@ -79,6 +87,28 @@ export function Acompanhar({ pedidoId, aoVoltar, aoNovoPedido }: Props) {
   useEffect(() => {
     return getProvider().realtime.assinarPedido(pedidoId, () => void carregar());
   }, [pedidoId, carregar]);
+
+  // Posição do entregador: só enquanto está em rota. Assina para quem tem
+  // sessão e consulta em intervalo para quem pediu sem cadastro.
+  useEffect(() => {
+    if (dados?.pedido.status !== 'EM_ROTA') {
+      setPosicao(null);
+      return;
+    }
+    const loc = getProvider().localizacao;
+    const buscar = () => {
+      void loc.obter(pedidoId).then((l) => l && setPosicao(l.coordenada));
+    };
+    buscar();
+    const cancelar = loc.assinar(pedidoId, (l) => setPosicao(l.coordenada));
+    const t = setInterval(() => {
+      if (document.visibilityState === 'visible') buscar();
+    }, 12000);
+    return () => {
+      cancelar();
+      clearInterval(t);
+    };
+  }, [pedidoId, dados?.pedido.status]);
 
   if (erro) {
     return (
@@ -158,6 +188,15 @@ export function Acompanhar({ pedidoId, aoVoltar, aoNovoPedido }: Props) {
               </div>
             </div>
           </div>
+        )}
+
+        {!cancelado && deveMostrarMapa(pedido) && pedido.endereco && (
+          <MapaEntrega
+            loja={estabelecimento.coordenada}
+            logoLoja={estabelecimento.imagem}
+            cliente={pedido.endereco.coordenada}
+            entregador={posicao}
+          />
         )}
 
         {!cancelado && (

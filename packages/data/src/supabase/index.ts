@@ -1,5 +1,6 @@
 import type { DataProvider } from '../contracts/index.js';
 import { type ConfigSupabase, conectar } from './cliente.js';
+import { localizacaoSupabase } from './localizacao.js';
 import {
   authSupabase,
   deliverySupabase,
@@ -16,6 +17,7 @@ export function criarSupabaseProvider(config: ConfigSupabase): DataProvider {
     orders: ordersSupabase,
     delivery: deliverySupabase,
     realtime: realtimeSupabase,
+    localizacao: localizacaoSupabase,
   };
 }
 

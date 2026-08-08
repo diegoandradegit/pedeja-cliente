@@ -1,6 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "noEmit": true, "types": ["vite/client", "vite-plugin-pwa/client"] },
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["vite/client", "vite-plugin-pwa/client", "google.maps"]
+  },
   "include": ["src", "vite.config.ts"],
-  "references": [{ "path": "../../packages/domain" }, { "path": "../../packages/data" }]
+  "references": [
+    {
+      "path": "../../packages/domain"
+    },
+    {
+      "path": "../../packages/data"
+    }
+  ]
 }

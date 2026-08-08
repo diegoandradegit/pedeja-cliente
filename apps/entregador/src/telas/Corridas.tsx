@@ -1,17 +1,13 @@
 import { type Corrida, getProvider } from '@pedeja/data';
-import { type Pedido, formatarBRL } from '@pedeja/domain';
+import { type Pedido, deveEnviarLocalizacao, formatarBRL } from '@pedeja/domain';
 import { useCallback, useEffect, useState } from 'react';
+import { seguirEEnviar } from '../lib/gps.js';
+import { linkNavegacao } from '../lib/mapas.js';
 
 type Props = { entregadorId: string; aoAvisar: (t: string, erro?: boolean) => void };
 
-const linkMapa = (p: Pedido): string => {
-  const e = p.endereco;
-  if (!e) return '';
-  const destino = encodeURIComponent(
-    `${e.logradouro}, ${e.numero} - ${e.bairro}, ${e.cidade} - ${e.uf}`,
-  );
-  return `https://www.google.com/maps/dir/?api=1&destination=${destino}`;
-};
+/** Deep link: a navegação passo a passo fica com o app de mapas do aparelho. */
+const linkMapa = (p: Pedido): string => (p.endereco ? linkNavegacao(p.endereco.coordenada) : '');
 
 export function Corridas({ entregadorId, aoAvisar }: Props) {
   const [ativa, setAtiva] = useState<Pedido | null>(null);
@@ -32,6 +28,12 @@ export function Corridas({ entregadorId, aoAvisar }: Props) {
     void carregar();
     return getProvider().realtime.assinarCorridas(() => void carregar());
   }, [carregar]);
+
+  // Rastreamento: liga ao entrar em rota e desliga sozinho ao concluir.
+  useEffect(() => {
+    if (!ativa || !deveEnviarLocalizacao(ativa.status)) return;
+    return seguirEEnviar(ativa.id, (msg) => aoAvisar(msg, true));
+  }, [ativa, aoAvisar]);
 
   async function aceitar(pedidoId: string) {
     setOcupado(true);
@@ -93,9 +95,14 @@ export function Corridas({ entregadorId, aoAvisar }: Props) {
             </p>
 
             {ativa.endereco && (
-              <a className="mapa" href={linkMapa(ativa)} target="_blank" rel="noreferrer">
-                Abrir rota no mapa
-              </a>
+              <>
+                <a className="mapa" href={linkMapa(ativa)} target="_blank" rel="noreferrer">
+                  Abrir navegação
+                </a>
+                <p style={{ margin: '10px 0 0', fontSize: '0.88rem', color: '#c6dbcd' }}>
+                  Sua posição está sendo enviada ao cliente enquanto a entrega estiver em rota.
+                </p>
+              </>
             )}
             <button
               type="button"

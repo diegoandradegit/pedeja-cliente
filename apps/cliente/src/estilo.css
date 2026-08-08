@@ -1416,3 +1416,42 @@ input:focus-visible {
   font-size: 1rem;
   font-weight: 600;
 }
+
+/* ── Mapa da entrega ───────────────────────────────────────────────────── */
+.mapa-tela {
+  width: 100%;
+  height: 240px;
+  background: var(--cinza-claro);
+}
+.mapa-eta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--linha);
+}
+.mapa-eta strong {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.mapa-eta span {
+  color: var(--cinza);
+  font-size: 0.94rem;
+}
+.mapa-distancia {
+  margin-left: auto;
+  font-family: var(--fonte-num);
+  font-size: 0.95rem;
+  color: var(--cinza);
+}
+
+.autocomplete gmp-place-autocomplete {
+  width: 100%;
+}
+.autocomplete {
+  --gmp-mat-color-primary: var(--vermelho);
+  --gmp-mat-color-on-surface: var(--texto);
+  --gmp-mat-font-family: var(--fonte);
+}

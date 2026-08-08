@@ -37,7 +37,13 @@ export type Cotacao = {
 /** Pedido com tudo que a tela de acompanhamento precisa, em uma chamada. */
 export type Acompanhamento = {
   pedido: Pedido;
-  estabelecimento: { id: string; nome: string; imagem: string | null; endereco: string };
+  estabelecimento: {
+    id: string;
+    nome: string;
+    imagem: string | null;
+    endereco: string;
+    coordenada: Coordenada;
+  };
   historico: { de: StatusPedido | null; para: StatusPedido; em: string }[];
 };
 

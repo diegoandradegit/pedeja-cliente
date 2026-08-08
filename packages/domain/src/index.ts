@@ -4,3 +4,4 @@ export * from './types.js';
 export * from './geo.js';
 export * from './pricing.js';
 export * from './schedule.js';
+export * from './rastreio.js';
