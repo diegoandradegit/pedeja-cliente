@@ -7,14 +7,18 @@ import {
 } from '@pedeja/domain';
 import { useCallback, useEffect, useState } from 'react';
 
-type Props = { estabelecimentoId: string; aoAvisar: (texto: string, erro?: boolean) => void };
+type Props = {
+  estabelecimentoId: string;
+  aoAvisar: (texto: string, erro?: boolean) => void;
+  aoSair: () => void;
+};
 
 const paraCampo = (c: number | null): string =>
   c === null ? '' : centavosParaReais(c).toFixed(2).replace('.', ',');
 
 const paraCentavos = (s: string): number => reaisParaCentavos(Number(s.replace(',', '.')) || 0);
 
-export function Ajustes({ estabelecimentoId, aoAvisar }: Props) {
+export function Ajustes({ estabelecimentoId, aoAvisar, aoSair }: Props) {
   const [loja, setLoja] = useState<Estabelecimento | null>(null);
   const [config, setConfig] = useState<ConfigFrete | null>(null);
   const [taxa, setTaxa] = useState('');
@@ -186,6 +190,11 @@ export function Ajustes({ estabelecimentoId, aoAvisar }: Props) {
           onClick={() => void pedidoDeTeste()}
         >
           {criando ? 'Criando…' : 'Criar pedido de exemplo'}
+        </button>
+
+        <h2 className="secao-t">Conta</h2>
+        <button type="button" className="botao-vazado" onClick={aoSair}>
+          Sair do painel
         </button>
       </div>
     </>

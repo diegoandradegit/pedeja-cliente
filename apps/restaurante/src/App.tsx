@@ -1,8 +1,9 @@
 import { getProvider } from '@pedeja/data';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { destravarSom } from './lib/som.js';
 import { Ajustes } from './telas/Ajustes.js';
 import { Cardapio } from './telas/Cardapio.js';
+import { Entrar } from './telas/Entrar.js';
 import { Pedidos } from './telas/Pedidos.js';
 
 type Aba = 'pedidos' | 'cardapio' | 'ajustes';
@@ -19,24 +20,40 @@ export function App() {
   const [aviso, setAviso] = useState<{ texto: string; erro: boolean } | null>(null);
   const [loja, setLoja] = useState<string | null>(null);
   const [semAcesso, setSemAcesso] = useState(false);
+  const [precisaEntrar, setPrecisaEntrar] = useState(false);
+  const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => {
+  const carregarSessao = useCallback(() => {
+    setCarregando(true);
+    setSemAcesso(false);
     getProvider()
       .auth.sessaoAtual()
       .then((sessao) => {
         if (!sessao) {
-          // sem login (mock) — usa a loja padrao
-          setLoja(LOJA_PADRAO);
+          setPrecisaEntrar(true);
+          setLoja(null);
           return;
         }
-        if (!sessao.estabelecimentoId) {
+        setPrecisaEntrar(false);
+        // com o mock nao ha vinculo real; cai na loja de exemplo
+        const alvo = sessao.estabelecimentoId ?? LOJA_PADRAO;
+        if (!alvo) {
           setSemAcesso(true);
           return;
         }
-        setLoja(sessao.estabelecimentoId);
+        setLoja(alvo);
       })
-      .catch(() => setLoja(LOJA_PADRAO));
+      .catch(() => setPrecisaEntrar(true))
+      .finally(() => setCarregando(false));
   }, []);
+
+  useEffect(() => carregarSessao(), [carregarSessao]);
+
+  async function sair() {
+    await getProvider().auth.sair();
+    setLoja(null);
+    setPrecisaEntrar(true);
+  }
 
   // Navegadores so liberam audio apos um gesto do usuario.
   useEffect(() => {
@@ -53,6 +70,18 @@ export function App() {
 
   const avisar = (texto: string, erro = false) => setAviso({ texto, erro });
 
+  if (carregando) {
+    return (
+      <div className="vazio">
+        <p>Carregando painel…</p>
+      </div>
+    );
+  }
+
+  if (precisaEntrar) {
+    return <Entrar aoEntrar={carregarSessao} />;
+  }
+
   if (semAcesso) {
     return (
       <div className="vazio">
@@ -61,6 +90,10 @@ export function App() {
           Esta conta não faz parte da equipe de nenhum restaurante. Peça a quem administra para
           liberar o acesso.
         </p>
+        <div style={{ height: 20 }} />
+        <button type="button" className="botao-vazado" onClick={() => void sair()}>
+          Sair
+        </button>
       </div>
     );
   }
@@ -77,7 +110,9 @@ export function App() {
     <>
       {aba === 'pedidos' && <Pedidos estabelecimentoId={loja} aoAvisar={avisar} />}
       {aba === 'cardapio' && <Cardapio estabelecimentoId={loja} aoAvisar={avisar} />}
-      {aba === 'ajustes' && <Ajustes estabelecimentoId={loja} aoAvisar={avisar} />}
+      {aba === 'ajustes' && (
+        <Ajustes estabelecimentoId={loja} aoAvisar={avisar} aoSair={() => void sair()} />
+      )}
 
       {aviso && (
         <output className="aviso" data-tom={aviso.erro ? 'erro' : undefined}>

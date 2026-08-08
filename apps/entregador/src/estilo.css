@@ -1,69 +1,287 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   PedeJá — app do entregador
+   Usado em movimento, muitas vezes com uma mão só e o celular no suporte da
+   moto. Alvos grandes, informação em ordem de decisão: quanto ganho, onde
+   pego, onde entrego.
+   ─────────────────────────────────────────────────────────────────────────── */
+
 :root {
-  --fundo: #fafaf9;
-  --texto: #1c1917;
-  --suave: #78716c;
-  --borda: #e7e5e4;
-  --card: #ffffff;
-  color-scheme: light;
+  --fundo: #0f1417;
+  --carta: #1a2126;
+  --borda: #2b343a;
+  --texto: #f2f5f6;
+  --suave: #93a1a8;
+  --verde: #16a34a;
+  --verde-escuro: #12813c;
+  --alerta: #e0603a;
+  color-scheme: dark;
 }
+
 * {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   background: var(--fundo);
   color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
-main {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
+button {
+  font: inherit;
+  cursor: pointer;
 }
-h1 {
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--verde);
+  outline-offset: 2px;
+}
+
+.topo {
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid var(--borda);
+}
+.topo h1 {
   font-size: 1.5rem;
-  margin: 0 0 4px;
+  font-weight: 700;
   letter-spacing: -0.02em;
+  margin: 0;
 }
-.sub {
+.topo p {
+  margin: 4px 0 0;
   color: var(--suave);
-  font-size: 0.9rem;
-  margin: 0 0 24px;
+  font-size: 0.95rem;
 }
-.card {
-  background: var(--card);
+
+.pagina {
+  padding: 16px 18px 100px;
+}
+
+.corrida {
+  background: var(--carta);
   border: 1px solid var(--borda);
   border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
 }
-.linha {
+.corrida-topo {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  align-items: center;
   gap: 12px;
 }
-.tag {
-  font-size: 0.72rem;
+.corrida-num {
+  color: var(--suave);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+.ganho {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--verde);
+  letter-spacing: -0.03em;
+}
+.corrida-loja {
+  font-size: 1.15rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 3px 8px;
+  margin: 10px 0 2px;
+}
+.corrida-end {
+  color: var(--suave);
+  font-size: 0.98rem;
+  margin: 0;
+  line-height: 1.4;
+}
+.corrida-dist {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.86rem;
+  color: var(--suave);
+  border: 1px solid var(--borda);
   border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.acao {
+  width: 100%;
+  margin-top: 14px;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: var(--verde);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.acao:active {
+  background: var(--verde-escuro);
+}
+.acao:disabled {
   background: var(--borda);
   color: var(--suave);
 }
-.vazio {
-  color: var(--suave);
-  font-size: 0.9rem;
-  padding: 32px 0;
-  text-align: center;
+.acao-vazada {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: none;
+  color: var(--texto);
+  font-size: 1rem;
+  font-weight: 600;
 }
-.fase {
-  margin-top: 32px;
+
+.ativa {
+  background: linear-gradient(160deg, #14532d, #1a2126);
+  border: 1px solid var(--verde);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+.ativa-rotulo {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #86efac;
+  margin: 0 0 8px;
+}
+.ativa h2 {
+  font-size: 1.3rem;
+  margin: 0 0 4px;
+}
+.ativa p {
+  margin: 0;
+  color: #d6e7dc;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.mapa {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+}
+
+.linha-extrato {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--borda);
+}
+.linha-extrato span:last-child {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.extrato-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
   padding-top: 16px;
-  border-top: 1px dashed var(--borda);
+  border-top: 1px solid var(--borda);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.extrato-total span:last-child {
+  color: var(--verde);
+}
+
+.grupo {
+  margin-bottom: 16px;
+}
+.grupo label {
+  display: block;
+  font-size: 0.9rem;
   color: var(--suave);
-  font-size: 0.8rem;
-  line-height: 1.6;
+  margin-bottom: 6px;
+}
+.grupo input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--carta);
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 1.05rem;
+}
+
+.vazio {
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--suave);
+}
+.vazio-t {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--texto);
+  margin: 0 0 8px;
+}
+.vazio p {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+.dica {
+  color: var(--suave);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+.dica-erro {
+  color: var(--alerta);
+}
+
+.abas {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  background: var(--carta);
+  border-top: 1px solid var(--borda);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.abas button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--suave);
+  padding: 13px 4px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-top: 2px solid transparent;
+  margin-top: -1px;
+}
+.abas button[aria-current="page"] {
+  color: var(--texto);
+  border-top-color: var(--verde);
+}
+
+.aviso {
+  position: fixed;
+  left: 18px;
+  right: 18px;
+  bottom: 82px;
+  z-index: 40;
+  background: var(--texto);
+  color: var(--fundo);
+  padding: 13px 15px;
+  border-radius: 10px;
+  font-size: 0.98rem;
+  font-weight: 500;
+}
+.aviso[data-tom="erro"] {
+  background: var(--alerta);
+  color: #fff;
 }

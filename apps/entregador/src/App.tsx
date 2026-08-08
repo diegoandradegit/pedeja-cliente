@@ -1,52 +1,86 @@
-import { type Corrida, getProvider } from '@pedeja/data';
-import { formatarBRL } from '@pedeja/domain';
-import { useEffect, useState } from 'react';
+import { getProvider } from '@pedeja/data';
+import { useCallback, useEffect, useState } from 'react';
+import { Corridas } from './telas/Corridas.js';
+import { Entrar } from './telas/Entrar.js';
+import { Extrato } from './telas/Extrato.js';
+
+type Aba = 'corridas' | 'extrato';
 
 export function App() {
-  const [corridas, setCorridas] = useState<Corrida[] | null>(null);
+  const [entregadorId, setEntregadorId] = useState<string | null>(null);
+  const [precisaEntrar, setPrecisaEntrar] = useState(false);
+  const [carregando, setCarregando] = useState(true);
+  const [aba, setAba] = useState<Aba>('corridas');
+  const [aviso, setAviso] = useState<{ texto: string; erro: boolean } | null>(null);
 
-  useEffect(() => {
-    const p = getProvider();
-    const carregar = () => {
-      p.delivery
-        .corridasDisponiveis()
-        .then(setCorridas)
-        .catch(() => setCorridas([]));
-    };
-    carregar();
-    return p.realtime.assinarCorridas(carregar);
+  const carregarSessao = useCallback(() => {
+    setCarregando(true);
+    getProvider()
+      .auth.sessaoAtual()
+      .then((sessao) => {
+        if (!sessao) {
+          setPrecisaEntrar(true);
+          setEntregadorId(null);
+          return;
+        }
+        setPrecisaEntrar(false);
+        setEntregadorId(sessao.usuarioId);
+      })
+      .catch(() => setPrecisaEntrar(true))
+      .finally(() => setCarregando(false));
   }, []);
 
-  return (
-    <main>
-      <h1>Corridas</h1>
-      <p className="sub">Pedidos prontos aguardando entregador</p>
+  useEffect(() => carregarSessao(), [carregarSessao]);
 
-      {!corridas && <div className="vazio">Carregando…</div>}
-      {corridas?.length === 0 && (
-        <div className="vazio">Nenhuma corrida disponível no momento.</div>
+  useEffect(() => {
+    if (!aviso) return;
+    const t = setTimeout(() => setAviso(null), 3400);
+    return () => clearTimeout(t);
+  }, [aviso]);
+
+  const avisar = (texto: string, erro = false) => setAviso({ texto, erro });
+
+  async function sair() {
+    await getProvider().auth.sair();
+    setEntregadorId(null);
+    setPrecisaEntrar(true);
+  }
+
+  if (carregando)
+    return (
+      <div className="vazio">
+        <p>Carregando…</p>
+      </div>
+    );
+  if (precisaEntrar || !entregadorId) return <Entrar aoEntrar={carregarSessao} />;
+
+  return (
+    <>
+      {aba === 'corridas' && <Corridas entregadorId={entregadorId} aoAvisar={avisar} />}
+      {aba === 'extrato' && <Extrato entregadorId={entregadorId} aoSair={() => void sair()} />}
+
+      {aviso && (
+        <output className="aviso" data-tom={aviso.erro ? 'erro' : undefined}>
+          {aviso.texto}
+        </output>
       )}
 
-      {corridas?.map((c) => (
-        <article className="card" key={c.pedidoId}>
-          <div className="linha">
-            <strong>
-              #{c.numero} · {c.estabelecimentoNome}
-            </strong>
-            <span className="tag">{formatarBRL(c.ganho)}</span>
-          </div>
-          <p className="sub" style={{ margin: '6px 0 0' }}>
-            {c.enderecoResumo} · {c.distanciaKm} km
-          </p>
-        </article>
-      ))}
-
-      <p className="fase">
-        Fase 0 concluída. Já escutando o canal de corridas em tempo real (mock via BroadcastChannel
-        — abra o painel em outra aba e mande um pedido para PRONTO).
-        <br />
-        Próximo: Fase 5 (aceite com trava, navegação, extrato).
-      </p>
-    </main>
+      <nav className="abas" aria-label="Seções">
+        <button
+          type="button"
+          aria-current={aba === 'corridas' ? 'page' : undefined}
+          onClick={() => setAba('corridas')}
+        >
+          Corridas
+        </button>
+        <button
+          type="button"
+          aria-current={aba === 'extrato' ? 'page' : undefined}
+          onClick={() => setAba('extrato')}
+        >
+          Extrato
+        </button>
+      </nav>
+    </>
   );
 }
