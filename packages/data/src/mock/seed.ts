@@ -9,6 +9,8 @@ import type {
 
 /** Placeholder unico ate o upload de imagem entrar (Fase 6, Supabase Storage). */
 const IMAGEM_EXEMPLO = '/produtos/exemplo.webp';
+const LOGO_EXEMPLO = '/loja-logo.png';
+const CAPA_EXEMPLO = '/loja-capa.webp';
 
 const todaSemana = (abre: string, fecha: string): FaixaHorario[] =>
   [0, 1, 2, 3, 4, 5, 6].map((d) => ({ diaSemana: d, abre, fecha }));
@@ -18,7 +20,8 @@ export const estabelecimentos: Estabelecimento[] = [
     id: 'e1',
     nome: 'Burger do Centro',
     descricao: 'Hamburgueria artesanal',
-    imagem: null,
+    imagem: LOGO_EXEMPLO,
+    capa: CAPA_EXEMPLO,
     corPrimaria: '#C2410C',
     corSecundaria: '#1C1917',
     coordenada: { lat: -23.4205, lng: -51.9331 },
@@ -32,6 +35,7 @@ export const estabelecimentos: Estabelecimento[] = [
     nome: 'Cantina da Nona',
     descricao: 'Massas e pizzas',
     imagem: null,
+    capa: null,
     corPrimaria: '#15803D',
     corSecundaria: '#1C1917',
     coordenada: { lat: -23.4331, lng: -51.9412 },

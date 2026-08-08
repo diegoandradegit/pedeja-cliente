@@ -12,6 +12,7 @@ export type Linha = {
   quantidade: number;
   adicionais: { id: string; nome: string; preco: Centavos }[];
   observacao?: string;
+  imagem: string | null;
   previaUnitaria: Centavos;
 };
 
@@ -33,6 +34,7 @@ export function montarLinha(
     quantidade,
     adicionais,
     ...(observacao.trim() ? { observacao: observacao.trim() } : {}),
+    imagem: produto.imagem,
     previaUnitaria: somar(produto.preco, ...adicionais.map((a) => a.preco)),
   };
 }

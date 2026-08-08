@@ -7,7 +7,7 @@ import {
   formatarBRL,
   reaisParaCentavos,
 } from '@pedeja/domain';
-import { Banknote, Check, CreditCard, QrCode } from 'lucide-react';
+import { Banknote, Check, CreditCard, Plus, QrCode, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type Linha, previaSubtotal } from '../lib/carrinho.js';
 import {
@@ -22,6 +22,7 @@ import { gravar as gravarPerfil, ler as lerPerfil } from '../lib/perfil.js';
 type Props = {
   loja: Estabelecimento;
   linhas: Linha[];
+  lojaAberta: boolean;
   aoFechar: () => void;
   aoMudarQuantidade: (chave: string, quantidade: number) => void;
   aoConfirmar: (pedido: Pedido) => void;
@@ -35,7 +36,15 @@ const PAGAMENTOS: [FormaPagamento, string, typeof QrCode][] = [
   ['DINHEIRO', 'Dinheiro', Banknote],
 ];
 
-export function Conta({ loja, linhas, aoFechar, aoMudarQuantidade, aoConfirmar, aoAvisar }: Props) {
+export function Conta({
+  loja,
+  linhas,
+  lojaAberta,
+  aoFechar,
+  aoMudarQuantidade,
+  aoConfirmar,
+  aoAvisar,
+}: Props) {
   const salvo = lerPerfil();
   const [tipo, setTipo] = useState<TipoEntrega>('ENTREGA');
   const [nome, setNome] = useState(salvo.nome);
@@ -161,52 +170,77 @@ export function Conta({ loja, linhas, aoFechar, aoMudarQuantidade, aoConfirmar, 
 
   return (
     <>
-      <div className="folha-cabecalho">
-        <h2>{loja.nome}</h2>
-        {loja.imagem && <img className="loja-marca" src={loja.imagem} alt="" />}
+      <div className="sacola-topo">
+        <button
+          type="button"
+          className="fechar-folha"
+          onClick={aoFechar}
+          aria-label="Fechar sacola"
+        >
+          <X size={22} strokeWidth={2.4} />
+        </button>
+        <div style={{ flex: 1 }}>
+          <h2>Sua sacola</h2>
+          <p>{loja.nome}</p>
+        </div>
+        {loja.imagem && (
+          <img
+            src={loja.imagem}
+            alt=""
+            style={{ width: 42, height: 42, borderRadius: 10, objectFit: 'cover' }}
+          />
+        )}
       </div>
 
       <div className="pagina">
-        <p className="bloco-titulo">Meu Pedido:</p>
-
         {linhas.length === 0 && (
           <div className="vazio">
-            <p className="vazio-t">Pedido vazio</p>
+            <p className="vazio-t">Sacola vazia</p>
             <p>Volte ao cardápio e escolha alguma coisa.</p>
           </div>
         )}
 
         {linhas.map((l) => (
-          <div className="item-conta" key={l.chave}>
-            <div className="item-texto">
-              <div className="item-nome">{l.nome}</div>
-              {l.adicionais.map((a) => (
-                <p className="item-extra" key={a.id}>
-                  {a.nome}
-                </p>
-              ))}
-              {l.observacao && <p className="item-extra">“{l.observacao}”</p>}
-              <p className="item-preco">{formatarBRL(l.previaUnitaria * l.quantidade)}</p>
-            </div>
-            <div className="passo">
-              <button
-                type="button"
-                onClick={() => aoMudarQuantidade(l.chave, l.quantidade - 1)}
-                aria-label={l.quantidade === 1 ? `Tirar ${l.nome}` : `Menos ${l.nome}`}
-              >
-                {l.quantidade === 1 ? '×' : '−'}
-              </button>
-              <span>{l.quantidade}</span>
-              <button
-                type="button"
-                onClick={() => aoMudarQuantidade(l.chave, l.quantidade + 1)}
-                aria-label={`Mais ${l.nome}`}
-              >
-                +
-              </button>
+          <div className="sacola-item" key={l.chave}>
+            {l.imagem && <img className="sacola-item-foto" src={l.imagem} alt="" loading="lazy" />}
+            <div className="sacola-item-corpo">
+              <div className="sacola-item-nome">{l.nome}</div>
+              {l.adicionais.length > 0 && (
+                <p className="sacola-item-extra">+ {l.adicionais.map((a) => a.nome).join(', ')}</p>
+              )}
+              {l.observacao && <p className="sacola-item-extra">“{l.observacao}”</p>}
+              <div className="sacola-item-pe">
+                <div className="passo-mini">
+                  <button
+                    type="button"
+                    onClick={() => aoMudarQuantidade(l.chave, l.quantidade - 1)}
+                    aria-label={l.quantidade === 1 ? `Tirar ${l.nome}` : `Menos ${l.nome}`}
+                  >
+                    {l.quantidade === 1 ? <X size={16} strokeWidth={2.6} /> : '−'}
+                  </button>
+                  <span>{l.quantidade}</span>
+                  <button
+                    type="button"
+                    onClick={() => aoMudarQuantidade(l.chave, l.quantidade + 1)}
+                    aria-label={`Mais ${l.nome}`}
+                  >
+                    +
+                  </button>
+                </div>
+                <span className="sacola-item-preco">
+                  {formatarBRL(l.previaUnitaria * l.quantidade)}
+                </span>
+              </div>
             </div>
           </div>
         ))}
+
+        {linhas.length > 0 && (
+          <button type="button" className="adicionar-mais" onClick={aoFechar}>
+            <Plus size={18} strokeWidth={2.4} />
+            Adicionar mais itens
+          </button>
+        )}
 
         {linhas.length > 0 && (
           <>
@@ -397,12 +431,18 @@ export function Conta({ loja, linhas, aoFechar, aoMudarQuantidade, aoConfirmar, 
         ) : (
           <button
             type="button"
-            className="acao"
-            disabled={!pronto || enviando}
+            className={lojaAberta ? 'acao' : 'acao acao-centro'}
+            disabled={!lojaAberta || !pronto || enviando}
             onClick={() => void finalizar()}
           >
-            <span>{enviando ? 'Enviando…' : 'Finalizar Pedido'}</span>
-            <Check size={22} strokeWidth={3} />
+            {lojaAberta ? (
+              <>
+                <span>{enviando ? 'Enviando…' : 'Finalizar pedido'}</span>
+                <Check size={22} strokeWidth={3} />
+              </>
+            ) : (
+              <span>Restaurante fechado</span>
+            )}
           </button>
         )}
       </div>

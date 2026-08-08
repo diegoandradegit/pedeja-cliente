@@ -43,7 +43,10 @@ export type Estabelecimento = {
   id: string;
   nome: string;
   descricao: string;
+  /** Marca redonda, exibida sobreposta a capa. */
   imagem: string | null;
+  /** Foto larga de topo. */
+  capa: string | null;
   corPrimaria: string;
   corSecundaria: string;
   coordenada: Coordenada;

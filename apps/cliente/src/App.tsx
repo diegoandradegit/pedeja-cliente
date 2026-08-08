@@ -1,9 +1,10 @@
 import { getProvider } from '@pedeja/data';
 import type { Estabelecimento, Pedido, Produto } from '@pedeja/domain';
-import { formatarBRL } from '@pedeja/domain';
 import { FileText, Home, Search, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { type Linha, juntar, previaSubtotal, totalDeItens } from './lib/carrinho.js';
+import { lojaEstaAberta } from './componentes/CabecalhoLoja.js';
+import { Sacola } from './componentes/Sacola.js';
+import { type Linha, juntar } from './lib/carrinho.js';
 import { registrar } from './lib/historico.js';
 import { Acompanhar } from './telas/Acompanhar.js';
 import { Busca } from './telas/Busca.js';
@@ -58,7 +59,6 @@ export function App() {
       </div>
     );
 
-  const itens = totalDeItens(linhas);
   const emAbas = sobreposicao === 'nenhuma';
 
   return (
@@ -67,6 +67,7 @@ export function App() {
         <Conta
           loja={loja}
           linhas={linhas}
+          lojaAberta={lojaEstaAberta(loja)}
           aoFechar={() => setSobreposicao('nenhuma')}
           aoMudarQuantidade={(chave, quantidade) =>
             setLinhas((atual) =>
@@ -135,6 +136,10 @@ export function App() {
         </output>
       )}
 
+      {emAbas && aba === 'inicio' && (
+        <Sacola linhas={linhas} aoAbrir={() => setSobreposicao('conta')} />
+      )}
+
       {emAbas && (
         <div className="rodape">
           <nav className="abas" aria-label="Seções">
@@ -171,16 +176,6 @@ export function App() {
               Configurações
             </button>
           </nav>
-
-          {itens > 0 && (
-            <button type="button" className="pedido-barra" onClick={() => setSobreposicao('conta')}>
-              <span>Meu Pedido</span>
-              <span className="num">
-                {String(itens).padStart(2, '0')} {itens === 1 ? 'item' : 'items'} ·{' '}
-                {formatarBRL(previaSubtotal(linhas))}
-              </span>
-            </button>
-          )}
         </div>
       )}
     </>
