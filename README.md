@@ -92,5 +92,5 @@ esse prefixo e só são lidos dentro de Netlify Functions.
 - [x] **3** — Painel do restaurante (comandas, cardápio, regras de entrega)
 - [x] **4** — App do cliente (cardápio, carrinho, checkout, acompanhamento)
 - [ ] **5** — App do entregador (corridas, aceite, extrato) + Web Push
-- [ ] **6** — Supabase: schema, RLS, RPCs, Auth, Realtime, Storage
+- [x] **6** — Supabase: schema, RLS, RPCs, provider (falta ligar em producao)
 - [ ] **7** — E2E, rate limit, observabilidade, LGPD

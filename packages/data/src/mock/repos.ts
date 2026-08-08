@@ -122,6 +122,9 @@ function catalogo(estabelecimentoId: string) {
     produtos: new Map(
       e.produtos.filter((p) => p.estabelecimentoId === estabelecimentoId).map((p) => [p.id, p]),
     ),
+    categorias: new Map(
+      e.categorias.filter((c) => c.estabelecimentoId === estabelecimentoId).map((c) => [c.id, c]),
+    ),
     adicionais: new Map(e.adicionais.map((a) => [a.id, a])),
     config: e.configsFrete.find((c) => c.estabelecimentoId === estabelecimentoId),
     estabelecimento: e.estabelecimentos.find((x) => x.id === estabelecimentoId),
@@ -130,10 +133,16 @@ function catalogo(estabelecimentoId: string) {
 
 /** Precifica sempre a partir do catalogo. Espelha o que a RPC do Supabase fara. */
 function precificar(estabelecimentoId: string, itens: ItemCarrinho[], destino: Coordenada | null) {
-  const { produtos, adicionais, config, estabelecimento } = catalogo(estabelecimentoId);
+  const { produtos, categorias, adicionais, config, estabelecimento } = catalogo(estabelecimentoId);
   if (!config || !estabelecimento) throw new Error(`Estabelecimento ${estabelecimentoId} invalido`);
 
-  const itensPrecificados = precificarItens(itens, produtos, adicionais);
+  const itensPrecificados = precificarItens(
+    itens,
+    produtos,
+    adicionais,
+    categorias,
+    estabelecimento.regraPrecoFracionado,
+  );
   const subtotal = calcularSubtotal(itensPrecificados);
   const dist = destino ? distanciaKm(estabelecimento.coordenada, destino) : null;
   const frete = dist === null ? 0 : calcularFrete(dist, config, subtotal);

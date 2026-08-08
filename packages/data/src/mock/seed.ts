@@ -22,12 +22,11 @@ export const estabelecimentos: Estabelecimento[] = [
     descricao: 'Hamburgueria artesanal',
     imagem: LOGO_EXEMPLO,
     capa: CAPA_EXEMPLO,
-    corPrimaria: '#C2410C',
-    corSecundaria: '#1C1917',
     coordenada: { lat: -23.4205, lng: -51.9331 },
     endereco: 'Av. Brasil, 1200 - Centro',
     horarios: todaSemana('18:00', '23:30'),
     aceitaRetirada: true,
+    regraPrecoFracionado: 'MAIOR',
     ativo: true,
   },
   {
@@ -36,22 +35,21 @@ export const estabelecimentos: Estabelecimento[] = [
     descricao: 'Massas e pizzas',
     imagem: null,
     capa: null,
-    corPrimaria: '#15803D',
-    corSecundaria: '#1C1917',
     coordenada: { lat: -23.4331, lng: -51.9412 },
     endereco: 'Rua Neo Alves Martins, 340',
     horarios: todaSemana('11:00', '15:00'),
     aceitaRetirada: false,
+    regraPrecoFracionado: 'MEDIA',
     ativo: true,
   },
 ];
 
 export const categorias: Categoria[] = [
-  { id: 'c1', estabelecimentoId: 'e1', nome: 'Mais pedidos', ordem: 1 },
-  { id: 'c4', estabelecimentoId: 'e1', nome: 'Pizzas', ordem: 2 },
-  { id: 'c5', estabelecimentoId: 'e1', nome: 'Porções', ordem: 3 },
-  { id: 'c2', estabelecimentoId: 'e1', nome: 'Bebidas', ordem: 4 },
-  { id: 'c3', estabelecimentoId: 'e2', nome: 'Massas', ordem: 1 },
+  { id: 'c1', estabelecimentoId: 'e1', nome: 'Mais pedidos', ordem: 1, maxSabores: 1 },
+  { id: 'c4', estabelecimentoId: 'e1', nome: 'Pizzas', ordem: 2, maxSabores: 2 },
+  { id: 'c5', estabelecimentoId: 'e1', nome: 'Porções', ordem: 3, maxSabores: 1 },
+  { id: 'c2', estabelecimentoId: 'e1', nome: 'Bebidas', ordem: 4, maxSabores: 1 },
+  { id: 'c3', estabelecimentoId: 'e2', nome: 'Massas', ordem: 1, maxSabores: 1 },
 ];
 
 export const adicionais: Adicional[] = [

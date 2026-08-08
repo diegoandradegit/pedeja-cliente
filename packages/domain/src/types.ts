@@ -27,6 +27,8 @@ export type Categoria = {
   estabelecimentoId: string;
   nome: string;
   ordem: number;
+  /** Sabores por item. 1 = normal; 2 = pizza meio a meio. */
+  maxSabores: number;
 };
 
 export type ConfigFrete = {
@@ -47,14 +49,17 @@ export type Estabelecimento = {
   imagem: string | null;
   /** Foto larga de topo. */
   capa: string | null;
-  corPrimaria: string;
-  corSecundaria: string;
   coordenada: Coordenada;
   endereco: string;
   horarios: FaixaHorario[];
   aceitaRetirada: boolean;
+  /** Como cobrar item com mais de um sabor: pelo mais caro ou pela média. */
+  regraPrecoFracionado: RegraFracionado;
   ativo: boolean;
 };
+
+export const REGRAS_FRACIONADO = ['MAIOR', 'MEDIA'] as const;
+export type RegraFracionado = (typeof REGRAS_FRACIONADO)[number];
 
 /**
  * O que o CLIENTE envia no checkout. Repare que nao existe campo de preco:
@@ -62,6 +67,8 @@ export type Estabelecimento = {
  */
 export type ItemCarrinho = {
   produtoId: string;
+  /** Meio a meio: sabores além do principal, da mesma categoria. */
+  saboresExtras?: string[];
   quantidade: number;
   adicionaisIds: string[];
   observacao?: string;
@@ -70,6 +77,8 @@ export type ItemCarrinho = {
 /** Item ja precificado e congelado no pedido. */
 export type ItemPedido = {
   produtoId: string;
+  /** Todos os sabores do item, na ordem escolhida. */
+  sabores: { id: string; nome: string }[];
   nomeProduto: string;
   quantidade: number;
   precoUnitario: Centavos;
