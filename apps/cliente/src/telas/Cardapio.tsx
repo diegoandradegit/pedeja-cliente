@@ -131,6 +131,10 @@ export function Cardapio({ loja, produtoInicial, aoLimparProdutoInicial, aoAdici
         <FolhaProduto
           produto={aberto}
           adicionais={adicionais}
+          categoria={categorias.find((c) => c.id === aberto.categoriaId)}
+          irmaos={produtos.filter(
+            (p) => p.categoriaId === aberto.categoriaId && p.id !== aberto.id && p.ativo,
+          )}
           aoFechar={() => {
             setAberto(null);
             aoLimparProdutoInicial();

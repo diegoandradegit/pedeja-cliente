@@ -8,6 +8,8 @@ import { type Adicional, type Centavos, type Produto, multiplicar, somar } from 
 export type Linha = {
   chave: string;
   produtoId: string;
+  /** Meio a meio: sabores alem do principal. */
+  saboresExtras: string[];
   nome: string;
   quantidade: number;
   adicionais: { id: string; nome: string; preco: Centavos }[];
@@ -21,21 +23,29 @@ export function montarLinha(
   quantidade: number,
   adicionaisEscolhidos: Adicional[],
   observacao: string,
+  saboresExtras: Produto[] = [],
 ): Linha {
   const adicionais = adicionaisEscolhidos.map((a) => ({ id: a.id, nome: a.nome, preco: a.preco }));
   const ids = adicionais
     .map((a) => a.id)
     .sort()
     .join(',');
+  const extrasIds = saboresExtras.map((e) => e.id);
   return {
-    chave: `${produto.id}|${ids}|${observacao.trim()}`,
+    chave: `${produto.id}|${extrasIds.join('-')}|${ids}|${observacao.trim()}`,
     produtoId: produto.id,
-    nome: produto.nome,
+    saboresExtras: extrasIds,
+    nome: [produto, ...saboresExtras].map((e) => e.nome).join(' / '),
     quantidade,
     adicionais,
     ...(observacao.trim() ? { observacao: observacao.trim() } : {}),
     imagem: produto.imagem,
-    previaUnitaria: somar(produto.preco, ...adicionais.map((a) => a.preco)),
+    // previa apenas: quem decide o preco e o servidor. Usa o sabor mais caro,
+    // que e a regra mais comum; se a loja cobrar a media, cotar() corrige.
+    previaUnitaria: somar(
+      Math.max(produto.preco, ...saboresExtras.map((e) => e.preco)),
+      ...adicionais.map((a) => a.preco),
+    ),
   };
 }
 

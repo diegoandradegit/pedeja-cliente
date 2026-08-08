@@ -11,7 +11,12 @@ import type {
   StatusPedido,
 } from '@pedeja/domain';
 import type { AuthRepo, Papel, Sessao } from '../contracts/auth.repo.js';
-import type { Corrida, DeliveryRepo, LinhaExtrato } from '../contracts/delivery.repo.js';
+import type {
+  Corrida,
+  DeliveryRepo,
+  EntregadorDaLoja,
+  LinhaExtrato,
+} from '../contracts/delivery.repo.js';
 import type { MenuRepo } from '../contracts/menu.repo.js';
 import type { Cotacao, NovoPedido, OrdersRepo } from '../contracts/orders.repo.js';
 import type { EventoPedido, RealtimeRepo } from '../contracts/realtime.repo.js';
@@ -65,6 +70,20 @@ export const authSupabase: AuthRepo = {
     if (error) throw erroLegivel(error, 'E-mail ou senha incorretos');
     const sessao = await authSupabase.sessaoAtual();
     if (!sessao) throw new Error('Não foi possível carregar o perfil');
+    return sessao;
+  },
+
+  async criarConta({ email, senha, nome, telefone }) {
+    const { error } = await sb().auth.signUp({
+      email,
+      password: senha,
+      options: { data: { nome, telefone } },
+    });
+    if (error) throw erroLegivel(error, 'Não foi possível criar a conta');
+    const sessao = await authSupabase.sessaoAtual();
+    if (!sessao) {
+      throw new Error('Conta criada. Confirme o e-mail que enviamos e entre para continuar.');
+    }
     return sessao;
   },
 
@@ -164,6 +183,61 @@ export const menuSupabase: MenuRepo = {
   async removerProduto(id) {
     const { error } = await sb().from('produtos').delete().eq('id', id);
     if (error) throw erroLegivel(error, 'Não foi possível remover o produto');
+  },
+
+  async removerCategoria(id) {
+    const { error } = await sb().rpc('remover_categoria', { p_categoria: id });
+    if (error) throw erroLegivel(error, 'Não foi possível remover a categoria');
+  },
+
+  async salvarAdicional(a): Promise<Adicional> {
+    const { data, error } = await sb()
+      .from('adicionais')
+      .upsert({
+        ...(a.id ? { id: a.id } : {}),
+        estabelecimento_id: a.estabelecimentoId,
+        nome: a.nome,
+        preco: a.preco,
+        ativo: a.ativo,
+      })
+      .select('*')
+      .single();
+    if (error) throw erroLegivel(error, 'Não foi possível salvar o adicional');
+    return paraAdicional(data);
+  },
+
+  async removerAdicional(id) {
+    const { error } = await sb().from('adicionais').delete().eq('id', id);
+    if (error) throw erroLegivel(error, 'Não foi possível remover o adicional');
+  },
+
+  async salvarEstabelecimento(e): Promise<Estabelecimento> {
+    const { data, error } = await sb()
+      .from('estabelecimentos')
+      .update({
+        nome: e.nome,
+        descricao: e.descricao,
+        imagem: e.imagem,
+        capa: e.capa,
+        endereco: e.endereco,
+        lat: e.coordenada.lat,
+        lng: e.coordenada.lng,
+        aceita_retirada: e.aceitaRetirada,
+        regra_preco_fracionado: e.regraPrecoFracionado,
+      })
+      .eq('id', e.id)
+      .select(SELECT_LOJA)
+      .single();
+    if (error) throw erroLegivel(error, 'Não foi possível salvar o restaurante');
+    return paraEstabelecimento(data);
+  },
+
+  async salvarHorarios(estabelecimentoId, faixas) {
+    const { error } = await sb().rpc('salvar_horarios', {
+      p_estabelecimento: estabelecimentoId,
+      p_faixas: faixas,
+    });
+    if (error) throw erroLegivel(error, 'Não foi possível salvar o horário');
   },
 
   async salvarCategoria(c): Promise<Categoria> {
@@ -299,6 +373,38 @@ export const ordersSupabase: OrdersRepo = {
 
 // ── Entregas ────────────────────────────────────────────────────────────────
 export const deliverySupabase: DeliveryRepo = {
+  async gerarConvite(estabelecimentoId) {
+    const { data, error } = await sb().rpc('gerar_convite_entregador', {
+      p_estabelecimento: estabelecimentoId,
+    });
+    if (error) throw erroLegivel(error, 'Não foi possível gerar o convite');
+    return data as string;
+  },
+
+  async usarConvite(codigo) {
+    const { error } = await sb().rpc('usar_convite_entregador', { p_codigo: codigo });
+    if (error) throw erroLegivel(error, 'Não foi possível usar o convite');
+  },
+
+  async entregadoresDaLoja(estabelecimentoId): Promise<EntregadorDaLoja[]> {
+    const { data, error } = await sb().rpc('entregadores_da_loja', {
+      p_estabelecimento: estabelecimentoId,
+    });
+    if (error) throw erroLegivel(error, 'Não foi possível carregar os entregadores');
+    return ((data ?? []) as Record<string, unknown>[]).map((e) => ({
+      usuarioId: e.usuario_id as string,
+      nome: (e.nome as string) || 'Sem nome',
+      telefone: (e.telefone as string) ?? '',
+      ativo: e.ativo as boolean,
+      criadoEm: e.criado_em as string,
+    }));
+  },
+
+  async definirEntregadorAtivo(usuarioId, ativo) {
+    const { error } = await sb().from('entregadores').update({ ativo }).eq('usuario_id', usuarioId);
+    if (error) throw erroLegivel(error, 'Não foi possível alterar o entregador');
+  },
+
   async corridasDisponiveis(): Promise<Corrida[]> {
     // a RLS já limita ao que o entregador pode ver
     const { data, error } = await sb()

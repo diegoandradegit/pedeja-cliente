@@ -69,6 +69,7 @@ export function Conta({
     () =>
       linhas.map((l) => ({
         produtoId: l.produtoId,
+        ...(l.saboresExtras.length > 0 ? { saboresExtras: l.saboresExtras } : {}),
         quantidade: l.quantidade,
         adicionaisIds: l.adicionais.map((a) => a.id),
         ...(l.observacao ? { observacao: l.observacao } : {}),

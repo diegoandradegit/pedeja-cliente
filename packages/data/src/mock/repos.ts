@@ -48,6 +48,22 @@ export const authMock: AuthRepo = {
     for (const cb of ouvintesSessao) cb(sessao);
     return sessao;
   },
+  async criarConta({ email, nome, telefone }) {
+    await atraso();
+    const sessao: Sessao = {
+      usuarioId: `u_${email}`,
+      nome,
+      email,
+      papel: 'ENTREGADOR',
+      estabelecimentoId: null,
+    };
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(CHAVE_SESSAO, JSON.stringify({ ...sessao, telefone }));
+    }
+    for (const cb of ouvintesSessao) cb(sessao);
+    return sessao;
+  },
+
   async sair() {
     await atraso(60);
     if (typeof localStorage !== 'undefined') localStorage.removeItem(CHAVE_SESSAO);
@@ -103,6 +119,57 @@ export const menuMock: MenuRepo = {
       e.produtos = e.produtos.filter((p) => p.id !== id);
     });
   },
+  async removerCategoria(id) {
+    await atraso();
+    gravar((e) => {
+      if (e.produtos.some((p) => p.categoriaId === id)) {
+        throw new Error('Esta categoria tem produtos. Mova ou remova antes de excluir.');
+      }
+      e.categorias = e.categorias.filter((c) => c.id !== id);
+    });
+  },
+
+  async salvarAdicional(a) {
+    await atraso();
+    const id = a.id ?? novoId();
+    const adicional: Adicional = { id, nome: a.nome, preco: a.preco, ativo: a.ativo };
+    gravar((e) => {
+      const i = e.adicionais.findIndex((x) => x.id === id);
+      if (i >= 0) e.adicionais[i] = adicional;
+      else e.adicionais.push(adicional);
+    });
+    return adicional;
+  },
+
+  async removerAdicional(id) {
+    await atraso();
+    gravar((e) => {
+      e.adicionais = e.adicionais.filter((a) => a.id !== id);
+      e.produtos = e.produtos.map((p) => ({
+        ...p,
+        adicionaisIds: p.adicionaisIds.filter((x) => x !== id),
+      }));
+    });
+  },
+
+  async salvarEstabelecimento(loja) {
+    await atraso();
+    gravar((e) => {
+      const i = e.estabelecimentos.findIndex((x) => x.id === loja.id);
+      if (i >= 0) e.estabelecimentos[i] = loja;
+    });
+    return loja;
+  },
+
+  async salvarHorarios(estabelecimentoId, faixas) {
+    await atraso();
+    gravar((e) => {
+      const i = e.estabelecimentos.findIndex((x) => x.id === estabelecimentoId);
+      const loja = e.estabelecimentos[i];
+      if (i >= 0 && loja) e.estabelecimentos[i] = { ...loja, horarios: faixas };
+    });
+  },
+
   async salvarCategoria(c) {
     await atraso();
     const id = c.id ?? novoId();
@@ -264,6 +331,25 @@ export const ordersMock: OrdersRepo = {
 };
 
 export const deliveryMock: DeliveryRepo = {
+  async gerarConvite() {
+    await atraso();
+    return `MOCK${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  },
+
+  async usarConvite(codigo) {
+    await atraso();
+    if (!codigo.trim()) throw new Error('Código de convite inválido');
+  },
+
+  async entregadoresDaLoja() {
+    await atraso();
+    return [];
+  },
+
+  async definirEntregadorAtivo() {
+    await atraso();
+  },
+
   async corridasDisponiveis(): Promise<Corrida[]> {
     await atraso();
     const e = ler();

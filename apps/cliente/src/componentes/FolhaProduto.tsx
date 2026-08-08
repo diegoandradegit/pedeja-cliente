@@ -1,4 +1,11 @@
-import { type Adicional, type Produto, formatarBRL, multiplicar, somar } from '@pedeja/domain';
+import {
+  type Adicional,
+  type Categoria,
+  type Produto,
+  formatarBRL,
+  multiplicar,
+  somar,
+} from '@pedeja/domain';
 import { Check } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { type Linha, montarLinha } from '../lib/carrinho.js';
@@ -6,15 +13,31 @@ import { type Linha, montarLinha } from '../lib/carrinho.js';
 type Props = {
   produto: Produto;
   adicionais: Adicional[];
+  /** Categoria do produto: define quantos sabores o item aceita. */
+  categoria: Categoria | undefined;
+  /** Outros produtos da mesma categoria, para o meio a meio. */
+  irmaos: Produto[];
   aoFechar: () => void;
   aoAdicionar: (linha: Linha) => void;
 };
 
-export function FolhaProduto({ produto, adicionais, aoFechar, aoAdicionar }: Props) {
+export function FolhaProduto({
+  produto,
+  adicionais,
+  categoria,
+  irmaos,
+  aoFechar,
+  aoAdicionar,
+}: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const [escolhidos, setEscolhidos] = useState<string[]>([]);
   const [quantidade, setQuantidade] = useState(1);
   const [observacao, setObservacao] = useState('');
+  const [extras, setExtras] = useState<Produto[]>([]);
+
+  const maxSabores = categoria?.maxSabores ?? 1;
+  const podeFracionar = maxSabores > 1 && irmaos.length > 0;
+  const vagasRestantes = maxSabores - 1 - extras.length;
 
   useEffect(() => {
     const el = ref.current;
@@ -29,7 +52,10 @@ export function FolhaProduto({ produto, adicionais, aoFechar, aoAdicionar }: Pro
 
   const disponiveis = adicionais.filter((a) => produto.adicionaisIds.includes(a.id) && a.ativo);
   const marcados = disponiveis.filter((a) => escolhidos.includes(a.id));
-  const previa = multiplicar(somar(produto.preco, ...marcados.map((a) => a.preco)), quantidade);
+  // previa: o sabor mais caro. Se a loja cobrar a media, a cotacao no checkout
+  // corrige — o valor que vale e sempre o do servidor.
+  const base = Math.max(produto.preco, ...extras.map((e) => e.preco));
+  const previa = multiplicar(somar(base, ...marcados.map((a) => a.preco)), quantidade);
 
   return (
     <dialog
@@ -48,6 +74,48 @@ export function FolhaProduto({ produto, adicionais, aoFechar, aoAdicionar }: Pro
           <h2 className="folha-titulo">{produto.nome}</h2>
           {produto.descricao && <p className="folha-desc">{produto.descricao}</p>}
           <p className="folha-preco">{formatarBRL(produto.preco)}</p>
+
+          {podeFracionar && (
+            <>
+              <p className="bloco-titulo">
+                Meio a meio
+                <span style={{ fontSize: '0.9rem', fontWeight: 400, color: 'var(--cinza)' }}>
+                  {' '}
+                  · até {maxSabores} sabores
+                </span>
+              </p>
+              <p className="folha-desc" style={{ margin: '0 0 8px' }}>
+                {extras.length === 0
+                  ? 'Quer dividir? Escolha outro sabor.'
+                  : `${1 + extras.length} sabores: ${[produto, ...extras].map((s) => s.nome).join(' + ')}`}
+              </p>
+              {irmaos.map((s) => {
+                const marcado = extras.some((e) => e.id === s.id);
+                return (
+                  <label className="adicional" key={s.id}>
+                    <input
+                      type="checkbox"
+                      checked={marcado}
+                      disabled={!marcado && vagasRestantes <= 0}
+                      onChange={() =>
+                        setExtras((atual) =>
+                          marcado ? atual.filter((e) => e.id !== s.id) : [...atual, s],
+                        )
+                      }
+                    />
+                    <span className="marca" aria-hidden="true">
+                      <Check size={16} strokeWidth={3} />
+                    </span>
+                    <span className="adicional-nome">{s.nome}</span>
+                    <span className="adicional-preco">{formatarBRL(s.preco)}</span>
+                  </label>
+                );
+              })}
+              {vagasRestantes <= 0 && (
+                <p className="dica">Máximo de sabores atingido. Desmarque um para trocar.</p>
+              )}
+            </>
+          )}
 
           {disponiveis.length > 0 && (
             <>
@@ -114,7 +182,9 @@ export function FolhaProduto({ produto, adicionais, aoFechar, aoAdicionar }: Pro
           <button
             type="button"
             className="acao"
-            onClick={() => aoAdicionar(montarLinha(produto, quantidade, marcados, observacao))}
+            onClick={() =>
+              aoAdicionar(montarLinha(produto, quantidade, marcados, observacao, extras))
+            }
           >
             <span>Adicionar</span>
             <span>{formatarBRL(previa)}</span>

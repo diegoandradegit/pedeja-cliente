@@ -12,6 +12,12 @@ export type Sessao = {
 export interface AuthRepo {
   sessaoAtual(): Promise<Sessao | null>;
   entrar(email: string, senha: string, papel: Papel): Promise<Sessao>;
+  criarConta(dados: {
+    email: string;
+    senha: string;
+    nome: string;
+    telefone: string;
+  }): Promise<Sessao>;
   sair(): Promise<void>;
   aoMudarSessao(cb: (s: Sessao | null) => void): () => void;
 }
