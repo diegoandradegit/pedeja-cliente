@@ -223,6 +223,29 @@ export const ordersMock: OrdersRepo = {
     return { distanciaKm: r.dist, subtotal: r.subtotal, frete: r.frete, total: r.total };
   },
 
+  async acompanhar(pedidoId) {
+    await atraso(80);
+    const e = ler();
+    const pedido = e.pedidos.find((p) => p.id === pedidoId);
+    if (!pedido) throw new Error('Pedido nao encontrado');
+    const loja = e.estabelecimentos.find((x) => x.id === pedido.estabelecimentoId);
+    return {
+      pedido,
+      estabelecimento: {
+        id: loja?.id ?? '',
+        nome: loja?.nome ?? '',
+        imagem: loja?.imagem ?? null,
+        endereco: loja?.endereco ?? '',
+      },
+      historico: e.historico.filter((h) => h.pedidoId === pedidoId),
+    };
+  },
+
+  async vincularPedidos(pedidoIds) {
+    await atraso(80);
+    return pedidoIds.length;
+  },
+
   async criar(entrada: NovoPedido): Promise<Pedido> {
     await atraso(300);
     const destino =
@@ -256,6 +279,7 @@ export const ordersMock: OrdersRepo = {
       };
       e.proximoNumero += 1;
       e.pedidos.push(pedido);
+      e.historico.push({ pedidoId: pedido.id, de: null, para: 'PENDENTE', em: agora });
     });
 
     publicar(canalEstabelecimento(pedido.estabelecimentoId), { tipo: 'PEDIDO_CRIADO', pedido });
@@ -297,8 +321,10 @@ export const ordersMock: OrdersRepo = {
       const i = e.pedidos.findIndex((p) => p.id === pedidoId);
       const alvo = e.pedidos[i];
       if (i < 0 || !alvo) throw new Error(`Pedido ${pedidoId} nao encontrado`);
-      atualizado = { ...alvo, status: novo, atualizadoEm: new Date().toISOString() };
+      const em = new Date().toISOString();
+      atualizado = { ...alvo, status: novo, atualizadoEm: em };
       e.pedidos[i] = atualizado;
+      e.historico.push({ pedidoId: alvo.id, de: alvo.status, para: novo, em });
     });
 
     publicar(canalEstabelecimento(atualizado.estabelecimentoId), {

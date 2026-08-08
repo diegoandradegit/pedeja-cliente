@@ -12,6 +12,7 @@ import { Cardapio } from './telas/Cardapio.js';
 import { Configuracoes } from './telas/Configuracoes.js';
 import { Conta } from './telas/Conta.js';
 import { MeusPedidos } from './telas/MeusPedidos.js';
+import { PedidoRecebido } from './telas/PedidoRecebido.js';
 
 type Aba = 'inicio' | 'buscar' | 'pedidos' | 'ajustes';
 
@@ -22,7 +23,9 @@ export function App() {
   const [loja, setLoja] = useState<Estabelecimento | null>(null);
   const [falhou, setFalhou] = useState(false);
   const [aba, setAba] = useState<Aba>('inicio');
-  const [sobreposicao, setSobreposicao] = useState<'nenhuma' | 'conta' | 'acompanhar'>('nenhuma');
+  const [sobreposicao, setSobreposicao] = useState<'nenhuma' | 'conta' | 'recebido' | 'acompanhar'>(
+    'nenhuma',
+  );
   const [abrirProduto, setAbrirProduto] = useState<Produto | null>(null);
   const [linhas, setLinhas] = useState<Linha[]>([]);
   const [pedido, setPedido] = useState<Pedido | null>(null);
@@ -77,18 +80,29 @@ export function App() {
             )
           }
           aoConfirmar={(p) => {
+            // o pedido já existe no banco neste ponto: só então limpamos a
+            // sacola e mostramos a confirmação com o número real
             registrar(p.id);
             setPedido(p);
             setLinhas([]);
-            setSobreposicao('acompanhar');
+            setSobreposicao('recebido');
           }}
           aoAvisar={avisar}
         />
       )}
 
+      {sobreposicao === 'recebido' && pedido && (
+        <PedidoRecebido pedido={pedido} aoAcompanhar={() => setSobreposicao('acompanhar')} />
+      )}
+
       {sobreposicao === 'acompanhar' && pedido && (
         <Acompanhar
-          pedidoInicial={pedido}
+          pedidoId={pedido.id}
+          aoVoltar={() => {
+            setPedido(null);
+            setAba('pedidos');
+            setSobreposicao('nenhuma');
+          }}
           aoNovoPedido={() => {
             setPedido(null);
             setAba('inicio');
@@ -124,6 +138,11 @@ export function App() {
           aoAbrir={(p) => {
             setPedido(p);
             setSobreposicao('acompanhar');
+          }}
+          aoRepetir={(itens) => {
+            setLinhas(itens);
+            setAba('inicio');
+            setSobreposicao('conta');
           }}
         />
       )}

@@ -25,6 +25,10 @@ type LinhaEstabelecimento = {
   lat: number;
   lng: number;
   aceita_retirada: boolean;
+  avaliacao: string | number | null;
+  avaliacoes_total: number;
+  tempo_min: number;
+  tempo_max: number;
   regra_preco_fracionado: 'MAIOR' | 'MEDIA';
   ativo: boolean;
   horarios?: { dia_semana: number; abre: string; fecha: string }[];
@@ -48,6 +52,10 @@ export function paraEstabelecimento(l: LinhaEstabelecimento): Estabelecimento {
     endereco: l.endereco,
     horarios,
     aceitaRetirada: l.aceita_retirada,
+    avaliacao: l.avaliacao === null ? null : Number(l.avaliacao),
+    avaliacoesTotal: l.avaliacoes_total,
+    tempoMin: l.tempo_min,
+    tempoMax: l.tempo_max,
     regraPrecoFracionado: l.regra_preco_fracionado,
     ativo: l.ativo,
   };
@@ -195,3 +203,27 @@ export function paraPedido(l: LinhaPedido): Pedido {
 export const SELECT_PEDIDO = '*, itens_pedido(*)';
 export const SELECT_LOJA = '*, horarios(dia_semana, abre, fecha)';
 export const SELECT_PRODUTO = '*, produto_adicionais(adicional_id)';
+
+/** Resposta da RPC acompanhar_pedido: pedido + loja + itens + histórico. */
+export function paraAcompanhamento(d: Record<string, unknown>): {
+  pedido: Pedido;
+  estabelecimento: { id: string; nome: string; imagem: string | null; endereco: string };
+  historico: { de: Pedido['status'] | null; para: Pedido['status']; em: string }[];
+} {
+  const bruto = d.pedido as Record<string, unknown>;
+  const itens = (d.itens ?? []) as LinhaItem[];
+  return {
+    pedido: paraPedido({ ...bruto, itens_pedido: itens } as unknown as LinhaPedido),
+    estabelecimento: d.estabelecimento as {
+      id: string;
+      nome: string;
+      imagem: string | null;
+      endereco: string;
+    },
+    historico: (d.historico ?? []) as {
+      de: Pedido['status'] | null;
+      para: Pedido['status'];
+      em: string;
+    }[],
+  };
+}

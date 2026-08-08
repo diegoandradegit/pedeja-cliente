@@ -18,13 +18,14 @@ import type {
   LinhaExtrato,
 } from '../contracts/delivery.repo.js';
 import type { MenuRepo } from '../contracts/menu.repo.js';
-import type { Cotacao, NovoPedido, OrdersRepo } from '../contracts/orders.repo.js';
+import type { Acompanhamento, Cotacao, NovoPedido, OrdersRepo } from '../contracts/orders.repo.js';
 import type { EventoPedido, RealtimeRepo } from '../contracts/realtime.repo.js';
 import { erroLegivel, sb } from './cliente.js';
 import {
   SELECT_LOJA,
   SELECT_PEDIDO,
   SELECT_PRODUTO,
+  paraAcompanhamento,
   paraAdicional,
   paraCategoria,
   paraConfigFrete,
@@ -281,8 +282,21 @@ export const ordersSupabase: OrdersRepo = {
     };
   },
 
+  async acompanhar(pedidoId): Promise<Acompanhamento> {
+    const { data, error } = await sb().rpc('acompanhar_pedido', { p_pedido: pedidoId });
+    if (error) throw erroLegivel(error, 'Não foi possível carregar o pedido');
+    return paraAcompanhamento(data as Record<string, unknown>);
+  },
+
+  async vincularPedidos(pedidoIds) {
+    if (pedidoIds.length === 0) return 0;
+    const { data, error } = await sb().rpc('vincular_pedidos', { p_pedidos: pedidoIds });
+    if (error) throw erroLegivel(error, 'Não foi possível vincular seus pedidos');
+    return (data as number) ?? 0;
+  },
+
   async criar(entrada: NovoPedido): Promise<Pedido> {
-    const { data: id, error } = await sb().rpc('criar_pedido', {
+    const { data, error } = await sb().rpc('criar_pedido_v2', {
       p_estabelecimento: entrada.estabelecimentoId,
       p_itens: paraRpc(entrada.itens),
       p_tipo_entrega: entrada.tipoEntrega,
@@ -293,10 +307,9 @@ export const ordersSupabase: OrdersRepo = {
       p_troco_para: entrada.trocoPara,
     });
     if (error) throw erroLegivel(error, 'Não foi possível enviar o pedido');
-
-    const pedido = await ordersSupabase.obter(id as string);
-    if (!pedido) throw new Error('Pedido criado, mas não foi possível carregá-lo');
-    return pedido;
+    // a RPC ja devolve o pedido montado — nao ha releitura que a RLS possa
+    // barrar para quem pediu sem cadastro
+    return paraAcompanhamento(data as Record<string, unknown>).pedido;
   },
 
   async obter(id) {

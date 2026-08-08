@@ -53,6 +53,11 @@ export type Estabelecimento = {
   endereco: string;
   horarios: FaixaHorario[];
   aceitaRetirada: boolean;
+  /** Vitrine: nota, quantidade de avaliações e janela de entrega em minutos. */
+  avaliacao: number | null;
+  avaliacoesTotal: number;
+  tempoMin: number;
+  tempoMax: number;
   /** Como cobrar item com mais de um sabor: pelo mais caro ou pela média. */
   regraPrecoFracionado: RegraFracionado;
   ativo: boolean;

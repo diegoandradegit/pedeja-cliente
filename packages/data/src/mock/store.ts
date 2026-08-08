@@ -1,4 +1,4 @@
-import type { Pedido } from '@pedeja/domain';
+import type { Pedido, StatusPedido } from '@pedeja/domain';
 import { adicionais, categorias, configsFrete, estabelecimentos, produtos } from './seed.js';
 
 // Versao da chave: subir sempre que o seed mudar, senao o aparelho continua
@@ -12,6 +12,7 @@ export type Estado = {
   adicionais: typeof adicionais;
   configsFrete: typeof configsFrete;
   pedidos: Pedido[];
+  historico: { pedidoId: string; de: StatusPedido | null; para: StatusPedido; em: string }[];
   proximoNumero: number;
 };
 
@@ -22,6 +23,7 @@ const inicial = (): Estado => ({
   adicionais: structuredClone(adicionais),
   configsFrete: structuredClone(configsFrete),
   pedidos: [],
+  historico: [],
   proximoNumero: 1,
 });
 

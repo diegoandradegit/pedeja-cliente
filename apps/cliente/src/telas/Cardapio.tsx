@@ -18,6 +18,18 @@ type Props = {
   aoAdicionar: (linha: Linha) => void;
 };
 
+/** Taxa mínima anunciada no topo: a taxa fixa, sem a parte por quilômetro. */
+function useTaxaBase(estabelecimentoId: string): number | null {
+  const [taxa, setTaxa] = useState<number | null>(null);
+  useEffect(() => {
+    getProvider()
+      .orders.obterConfigFrete(estabelecimentoId)
+      .then((c) => setTaxa(c.taxaFixa))
+      .catch(() => setTaxa(null));
+  }, [estabelecimentoId]);
+  return taxa;
+}
+
 const TUDO = 'tudo';
 
 export function Cardapio({ loja, produtoInicial, aoLimparProdutoInicial, aoAdicionar }: Props) {
@@ -44,6 +56,7 @@ export function Cardapio({ loja, produtoInicial, aoLimparProdutoInicial, aoAdici
     });
   }, [loja.id]);
 
+  const taxaBase = useTaxaBase(loja.id);
   const lojaAberta = lojaEstaAberta(loja);
   const comProdutos = categorias.filter((c) => produtos.some((p) => p.categoriaId === c.id));
 
@@ -52,7 +65,7 @@ export function Cardapio({ loja, produtoInicial, aoLimparProdutoInicial, aoAdici
 
   return (
     <>
-      <CabecalhoLoja loja={loja} aberto={lojaAberta} />
+      <CabecalhoLoja loja={loja} aberto={lojaAberta} taxaBase={taxaBase} />
 
       {comProdutos.length > 1 && (
         <nav className="categorias" aria-label="Filtrar por categoria">

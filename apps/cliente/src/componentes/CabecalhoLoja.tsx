@@ -1,10 +1,10 @@
-import { type Estabelecimento, estabelecimentoAberto } from '@pedeja/domain';
-import { Clock } from 'lucide-react';
+import { type Estabelecimento, estabelecimentoAberto, formatarBRL } from '@pedeja/domain';
+import { Bike, Clock, Star } from 'lucide-react';
 
-type Props = { loja: Estabelecimento; aberto: boolean };
+type Props = { loja: Estabelecimento; aberto: boolean; taxaBase: number | null };
 
 /** Capa larga com a marca sobreposta — o arranjo dos cardápios online. */
-export function CabecalhoLoja({ loja, aberto }: Props) {
+export function CabecalhoLoja({ loja, aberto, taxaBase }: Props) {
   const hoje = loja.horarios.find((h) => h.diaSemana === new Date().getDay()) ?? loja.horarios[0];
 
   return (
@@ -27,6 +27,38 @@ export function CabecalhoLoja({ loja, aberto }: Props) {
           {aberto ? 'Aberto agora' : 'Fechado'}
           {hoje && <small>· {aberto ? `até ${hoje.fecha}` : `abre ${hoje.abre}`}</small>}
         </span>
+
+        <div className="vitrine">
+          {loja.avaliacao !== null && (
+            <span>
+              <Star size={17} strokeWidth={2.2} />
+              {loja.avaliacao.toFixed(1).replace('.', ',')}
+              {loja.avaliacoesTotal > 0 && (
+                <small>
+                  (
+                  {loja.avaliacoesTotal >= 1000
+                    ? `${(loja.avaliacoesTotal / 1000).toFixed(1).replace('.', ',')}k`
+                    : loja.avaliacoesTotal}
+                  )
+                </small>
+              )}
+            </span>
+          )}
+          <span>
+            <Clock size={17} strokeWidth={2.2} />
+            {loja.tempoMin}-{loja.tempoMax} min
+          </span>
+          {taxaBase !== null && (
+            <span>
+              <Bike size={17} strokeWidth={2.2} />
+              {taxaBase === 0 ? (
+                <em className="gratis">Grátis</em>
+              ) : (
+                `a partir de ${formatarBRL(taxaBase)}`
+              )}
+            </span>
+          )}
+        </div>
       </header>
 
       {!aberto && (

@@ -34,7 +34,21 @@ export type Cotacao = {
   total: Centavos;
 };
 
+/** Pedido com tudo que a tela de acompanhamento precisa, em uma chamada. */
+export type Acompanhamento = {
+  pedido: Pedido;
+  estabelecimento: { id: string; nome: string; imagem: string | null; endereco: string };
+  historico: { de: StatusPedido | null; para: StatusPedido; em: string }[];
+};
+
 export interface OrdersRepo {
+  /**
+   * Acompanhar pelo id do pedido, sem login. O id e a credencial: quem o tem
+   * ve aquele pedido, e ninguem consegue listar os dos outros.
+   */
+  acompanhar(pedidoId: string): Promise<Acompanhamento>;
+  /** Adota, para a conta logada, os pedidos feitos antes como visitante. */
+  vincularPedidos(pedidoIds: string[]): Promise<number>;
   cotar(
     estabelecimentoId: string,
     itens: ItemCarrinho[],
